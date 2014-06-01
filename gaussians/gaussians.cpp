@@ -69,6 +69,21 @@ static double LogRatioNormalisation (Gaussian a, Gaussian b){
   }
 }
 
+///Tests if a double is PositiveInfinity
+
+static bool IsPositiveInfinity(double x){
+  
+ if(x == std::numeric_limits<double>::infinity()) return true;
+ else return false;
+}
+
+/// Tests if a double is NegativeInfinity
+
+static bool IsNegativeInfinity(double x){
+  if(x == -(std::numeric_limits<double>::infinity())) return true;
+  else return false;
+}
+
 /// Computes the complementary error function. This function is defined     
 /// by 2/sqrt(pi) * integral from x to infinity of exp (-t^2) dt.
 static double erfc(double x){
