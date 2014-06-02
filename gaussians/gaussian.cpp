@@ -3,10 +3,7 @@
 #include <cmath>
 #include <limits>
 
-/// Template to evaluate Maximum of two elements.
-
-template<typename T> 
-T max( T const a, T const b ){ return a > b ? a : b; }
+using namespace std;
 
 /// Creates a Gaussian in (mean,standard-deviation) coordinates
 Gaussian::Gaussian(double mu, double sigma)
