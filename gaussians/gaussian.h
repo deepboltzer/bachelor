@@ -3,9 +3,7 @@
 /// in exponential parameterisation. 
 
 class Gaussian{
-
 private:
-  
   double PrecisionMean;
   double Precision;
   double Mu;
@@ -14,7 +12,7 @@ private:
   double StadardDeviation;
   double Sigma;
   
-public:
+ public: 
 
   /// Default Constructor.
   Gaussian();
@@ -24,9 +22,9 @@ public:
   ~Gaussian();
   
   /// Multiplies two Gaussians  
-  Gaussian* multiply_Gaussian(Gaussian a, Gaussian b);
+  Gaussian* multiply_Gaussian(Gaussian b);
   /// Divides two Gaussians
-  Gaussian* divide_Gaussian(Gaussian a, Gaussian b);
+  Gaussian* divide_Gaussian(Gaussian b);
   /// Computes the absolute difference between two Gaussians
   double AbsoluteDifference(Gaussian a, Gaussian b);
   /// Computes the log-normalisation factor when two normalised Gaussians gets multiplied
@@ -43,6 +41,8 @@ public:
   double erfcinv(double y);
   /// Computes the cummulative Gaussian distribution at a specified point of interest
   double normcdf(double t);
+  /// Computes the Standard Gaussian density at a specified point of interest
+  double standard_normpdf (double t);
   /// Computes the Gaussian density at a specified point of interest
   double normpdf(double t);
   /// Computes the inverse of the cummulative Gaussian distribution (qunatile function) at a specified point of interest
