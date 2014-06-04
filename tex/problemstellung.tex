@@ -1,0 +1,75 @@
+\documentclass[12pt,a4paper]{scrartcl}
+% scrartcl ist eine abgeleitete Artikel-Klasse im Koma-Skript
+% zur Kontrolle des Umbruchs Klassenoption draft verwenden
+
+
+% die folgenden Packete erlauben den Gebrauch von Umlauten und ß
+% in der Latex Datei
+\usepackage[utf8]{inputenc}
+% \usepackage[latin1]{inputenc} %  Alternativ unter Windows
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+
+\usepackage{scrpage2}
+\usepackage[pdftex]{graphicx}
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{latexsym}
+\usepackage{amssymb}
+
+
+% Abstand obere Blattkante zur Kopfzeile ist 2.54cm - 15mm
+\setlength{\topmargin}{-15mm}
+
+
+% Umgebungen für Definitionen, Sätze, usw.
+% Es werden Sätze, Definitionen etc innerhalb einer Section mit
+% 1.1, 1.2 etc durchnummeriert, ebenso die Gleichungen mit (1.1), (1.2) ..
+\newtheorem{Satz}{Satz}[section]
+\newtheorem{Definition}[Satz]{Definition} 
+\newtheorem{Lemma}[Satz]{Lemma}	
+\newtheorem{Beweis}{Beweis}	
+                  
+\numberwithin{equation}{section} 
+
+% einige Abkuerzungen
+\newcommand{\C}{\mathbb{C}} % komplexe
+\newcommand{\K}{\mathbb{K}} % komplexe
+\newcommand{\R}{\mathbb{R}} % reelle
+\newcommand{\Q}{\mathbb{Q}} % rationale
+\newcommand{\Z}{\mathbb{Z}} % ganze
+\newcommand{\N}{\mathbb{N}} % natuerliche
+
+\title{Integration im TrueSkill Verfahren}
+\author{Johannes Loevenich}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Problemstellung}
+Angenommen es sei ein Parameter $\varTheta$ mit $P(\varTheta) = N(\varTheta; \mu;\varSigma)$ und eine Likelyhood Wahrscheinlichkeit $P(x|\varTheta)$ gegeben. 
+Bezeichne die Likelyhood Wahrscheinlichkeit die Funktion $t_x(\varTheta)$, die nur vom Parameter $\varTheta$ abhängt. 
+Dann ist die Wahrscheinlichkeit $P(\varTheta|x)$ nicht länger gaußverteilt, 
+
+\begin{equation}
+  P(\varTheta|x) = \frac{t_x(\varTheta)P(\varTheta)}{\int t_x(\varTheta^{'})P(\varTheta^{'})d\varTheta^{'}}
+\end{equation}
+
+Vom ADF wissen wir, dass wir diese Wahrscheinlichkeit mithilfe der Gaußverteilung $N(\varTheta,\mu_x^{'},\varSigma_x^{'})$ so approximieren können, dass die KL-Divergenz minimiert wird. 
+Im Allgemeinen ergeben sich 
+
+\begin{equation}
+ \mu_x = \mu + \varSigma_x, \text{			} \varSigma_x^{'} = \varSigma - \varSigma(g_xg_x^T - 2G_x)\varSigma,
+\end{equation}
+ wobei der Vektor \textbf{$g_x$} und die Matrix $G_x$ durch  
+
+ \begin{equation}
+  g_x := \frac{\partial log(Z_x(\mu^{'},\varSigma^{'}))}{\partial \mu^{'}}, \text{			} G_x := \frac{\partial log(Z_x(\mu^{'},\varSigma^{'}))}{\partial \varSigma^{'}}
+ \end{equation}
+gegeben sind. 
+ \end{document}
