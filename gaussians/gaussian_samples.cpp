@@ -7,24 +7,35 @@
 
 using namespace std;
 
-// Demo of vector plot.
-// Compile it with:
-//   g++ -o example-vector example-vector.cc -lboost_iostreams -lboost_system -lboost_filesystem
+
 /// Test environment for Gaussians:
+/// Compile it with:
+/// g++ -Wall -o gaussian gaussian.cpp gaussian_samples.cpp -lboost_iostreams -lboost_system -lboost_filesystem
+
 int main(void){
-  Gnuplot gp;
+ Gnuplot gp;
   Gaussian G1(0,1);
-  int i;
-  std::fstream f1,f2;
-  f1.open("cdf_01gaussian.dat", ios::out);
-  f2.open("pdf_01gaussian.dat", ios::out);
-  //for(i=-500;i<=500;i++){
-    // f1 << G1.normcdf(double(i)/100.0) << "\n" << endl;
-     //f2 << G1.normpdf(double(i)/100.0) << "\n" << endl;
-  //}
-  f1.close();
-  f2.close();
-  //Gaussian G2(0.25,0.75);
-  //Gaussian* G3 = (G1.multiply_Gaussian(G2));
+  Gaussian G2(0,4);
+  Gaussian G3(-1,4);
   //cout << G1.normpdf(0) << endl;
+  gp << "set terminal png\n";
+
+	std::vector<double> y_pts;
+	std::vector<double> x_pts;
+	std::vector<double> z_pts;
+	for(int i=-500;i<=500;i++) {
+		double y = G1.normpdf(double(i)/100.0);
+		y_pts.push_back(y);
+		double x = G2.normpdf(double(i)/100.0);
+		x_pts.push_back(x);
+		double z = G3.normpdf(double(i)/100.0);
+		z_pts.push_back(z);
+	}
+
+	std::cout << "Creating Gaussians.png" << std::endl;
+	gp << "set output 'Gaussians.png'\n";
+	gp << "plot '-' with lines title 'N(0,1)', '-' with lines title 'N(0,4)', '-' with lines title 'N(-1,4)'\n";
+	gp.send1d(y_pts);
+	gp.send1d(x_pts);
+	gp.send1d(z_pts);
 }

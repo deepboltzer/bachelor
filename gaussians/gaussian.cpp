@@ -6,6 +6,7 @@
 #include "../gnuplot-iostream/gnuplot-iostream.h"
 
 using namespace std;
+
 Gaussian::Gaussian()
 : PrecisionMean(0), Precision(0), Mu(0), Mean(0), Variance(0), StadardDeviation(0), Sigma(0) 
 {
@@ -164,7 +165,7 @@ double Gaussian::w_t_epsilon(double t, double epsilon){
   }
   else{
     double vt = v_t_epsilon(t, epsilon);
-    return vt * (vt + t - epsilon);
+    return (vt * (vt + t - epsilon));
   }
 }
 
@@ -190,34 +191,6 @@ double Gaussian::w0_t_epsilon(double t, double epsilon){
   if(valnormcdf  < 2.222758749e-162) return 1.0;
   else{
     double vt = v0_t_epsilon(v,epsilon);
-    return vt*vt + ((epsilon-v) * normpdf (epsilon-v) - (-epsilon-v) * normpdf (-epsilon-v))/valnormcdf;
+    return (vt*vt + ((epsilon-v) * normpdf (epsilon-v) - (-epsilon-v) * normpdf (-epsilon-v))/valnormcdf);
   }
-}
-
-int main(void){
-  Gnuplot gp;
-  Gaussian G1(0,1);
-  Gaussian G2(0,4);
-  Gaussian G3(-1,4);
-  //cout << G1.normpdf(0) << endl;
-  gp << "set terminal png\n";
-
-	std::vector<double> y_pts;
-	std::vector<double> x_pts;
-	std::vector<double> z_pts;
-	for(int i=-500;i<=500;i++) {
-		double y = G1.normpdf(double(i)/100.0);
-		y_pts.push_back(y);
-		double x = G2.normpdf(double(i)/100.0);
-		x_pts.push_back(x);
-		double z = G3.normpdf(double(i)/100.0);
-		z_pts.push_back(z);
-	}
-
-	std::cout << "Creating Gaussians.png" << std::endl;
-	gp << "set output 'Gaussians.png'\n";
-	gp << "plot '-' with lines title 'N(0,1)', '-' with lines title 'N(0,4)', '-' with lines title 'N(-1,4)'\n";
-	gp.send1d(y_pts);
-	gp.send1d(x_pts);
-	gp.send1d(z_pts);
 }
