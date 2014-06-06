@@ -1,201 +1,166 @@
-#include <iostream>
 #include "gaussian.h"
-#include <cmath>
-#include <limits>
-#include <fstream> 
-#include "../gnuplot-iostream/gnuplot-iostream.h"
+#include <math.h>
+#include "constants.h"
+#include <stdlib.h>
+#include <iostream>
 
-using namespace std;
+Gaussian::Gaussian(double mean, double standardDeviation){
+    this->mean = mean;
+    this->standardDeviation = standardDeviation;
+    this->variance = sqrt(standardDeviation);
+    this->precision = 1.0/variance;
+    this->precisionMean = precision*mean;
+} 
 
-Gaussian::Gaussian()
-: PrecisionMean(0), Precision(0), Mu(0), Mean(0), Variance(0), StadardDeviation(0), Sigma(0) 
-{
-
+Gaussian::~Gaussian(){
+    //TODO
 }
 
-/// Creates a Gaussian in (mean,standard-deviation) coordinates
-Gaussian::Gaussian(double mu, double variance)
-: PrecisionMean(mu/(variance)), Precision(1./(variance)), Mu(mu), Mean(mu), Variance(variance), StadardDeviation(sqrt(variance)), Sigma(sqrt(variance)) 
-{
+double Gaussian::normalizationConstant(double standardDeviation){
+    return 1.0/(sqrt(2*PI)*standardDeviation);
+} 
+
+/** Creates a Gaussian distribution from the precision mean value **/
+Gaussian Gaussian::fromPrecisionMean(double precisionMean, double precision){
+    double mean = precisionMean / precision;
+    double variance = 1.0/precision;
+    double standardDeviation = sqrt(variance);
+    Gaussian gaussian(mean, standardDeviation);
+    return gaussian;
 }
 
-/// Deconstructor for Gaussians
-
-Gaussian::~Gaussian()
-{
-  
-}
-/// Multiplies two Gaussians  
-Gaussian* Gaussian::multiply_Gaussian(Gaussian b){
-  return new Gaussian(this->PrecisionMean + b.PrecisionMean, this->Precision + b.Precision);
+Gaussian Gaussian::operator* (const Gaussian &aux){
+    return fromPrecisionMean(this->precisionMean + aux.precisionMean, this->precision + aux.precision);
 }
 
-/// Divides two Gaussians
-Gaussian* Gaussian::divide_Gaussian(Gaussian b){
-  return new Gaussian(this->PrecisionMean - b.PrecisionMean, this->Precision - b.Precision);
+double Gaussian::absoluteDifference (const Gaussian &aux){
+    double absolute = abs(this->precisionMean - aux.precisionMean);
+    double square = abs(this->precision - aux.precision);
+    if (absolute > square)
+        return absolute;
+    else
+        return square;
 }
 
-/// Computes the absolute difference between two Gaussians
-double Gaussian::AbsoluteDifference(Gaussian a, Gaussian b){
-  return max<double>(std::abs(a.PrecisionMean - b.PrecisionMean),sqrt(std::abs(a.Precision - b.Precision)));
-}        
-
-/// Computes the log-normalisation factor when two normalised Gaussians gets multiplied
-double Gaussian::LogProductNormalisation(Gaussian a, Gaussian b){
-  if (a.Precision == 0.0) return 0.0;
-  else if (b.Precision == 0.0) return 0.0; 
-  else {
-    double varSum = a.Variance + b.Variance;
-    double muDiff = a.Mean - b.Mean;
-    return (-0.91893853320467267 - log(varSum)/2.0 - muDiff*muDiff/(2.0 * varSum));
-  }
-}
-                
-/// Computes the log-normalisation factor when two normalised Gaussians gets divided
-double Gaussian::LogRatioNormalisation (Gaussian a, Gaussian b){
-  if (a.Precision == 0.0) return 0.0;
-  else if (b.Precision == 0.0) return 0.0;
-  else{
-    double v2 = b.Variance;
-    double varDiff = v2 - a.Variance;
-    double muDiff = a.Mean - b.Mean;
-    if(varDiff == 0.0) return 0.0;
-    else return (log(v2) + 0.91893853320467267 - log(varDiff)/2.0 + muDiff*muDiff/(2.0 * varDiff));
-  }
+double Gaussian::operator- (const Gaussian &aux){
+    return this->absoluteDifference(aux);
 }
 
-///Tests if a double is PositiveInfinity
+double Gaussian::logProductNormalization (const Gaussian &aux){
+    if ((this->precision == 0) || (aux.precision == 0))
+        return 0;
 
-bool Gaussian::IsPositiveInfinity(double x){
-  
- if(x == std::numeric_limits<double>::infinity()) return true;
- else return false;
+    double varianceSum = this->variance + aux.variance;
+    double meanDifference = this->mean - aux.mean;
+
+    double logSqrt2Pi = log(sqrt(2*PI));
+
+    return -logSqrt2Pi - (log(varianceSum)/2.0) - sqrt(meanDifference)/(2.0*varianceSum);
 }
 
-/// Tests if a double is NegativeInfinity
-
-bool Gaussian::IsNegativeInfinity(double x){
-  if(x == -(std::numeric_limits<double>::infinity())) return true;
-  else return false;
+Gaussian Gaussian::operator/ (const Gaussian &aux){
+    return fromPrecisionMean(this->precisionMean - aux.precisionMean, this->precision - aux.precision);
 }
 
-/// Computes the complementary error function. This function is defined     
-/// by 2/sqrt(pi) * integral from x to infinity of exp (-t^2) dt.
-double Gaussian::erfc(double x){
-  if(IsNegativeInfinity(x) == true) return 2.0;
-  else if(IsPositiveInfinity(x) == true) return 0.0;
-  else{
-    double z = std::abs(x);
-    double t = 1.0/(1.0 + 0.5 * z);
-    double res = t * exp (-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
-    if (x >= 0.0) return res;
-    else return 2.0 - res;
-  }
+double Gaussian::logRatioNormalization (const Gaussian &aux){
+    if ((this->precision == 0) || (aux.precision == 0))
+        return 0;
+
+    double varianceDifference = this->variance - aux.variance;
+    double meanDifference = this->mean - aux.mean;
+
+    double logSqrt2Pi = log(sqrt(2*PI));
+
+    return log(this->variance) + logSqrt2Pi - log(varianceDifference)/2.0 + (meanDifference*meanDifference) / (2*varianceDifference);
 }
 
-/// Computes the inverse of the complementary error function
+double Gaussian::at (double x){
+    return at(x, 0, 1);
+}
+
+double Gaussian::at (double x, double mean, double standardDeviation){
+    double multiplier = 1.0/(standardDeviation * sqrt(2*PI));
+    double expPart = exp((-1.0*pow(x - mean, 2.0))/(2*(standardDeviation*standardDeviation)));
+    return multiplier*expPart;
+}
+
+double Gaussian::cumulativeTo (double x){
+    return cumulativeTo (x, 0, 1);
+}
+
+double Gaussian::cumulativeTo (double x, double mean, double standardDeviation){
+    const double invsqrt2 = 1/sqrt(2);
+    double result = errorFunctionCumulativeTo(invsqrt2*x);
+    return 0.5*result;
+}
+
+double Gaussian::errorFunctionCumulativeTo (double x){
+    //Numerical Recipes 265 3rd edition
+    double z = abs(x);
+
+    double t = 2.0/(2.0 + z);
+    double ty = 4*t - 2;
+
+    double coefficients [] = {-1.3026537197817094, 6.4196979235649026e-1,
+                             1.9476473204185836e-2, -9.561514786808631e-3, 
+                             -9.46595344482036e-4, 3.66839497852761e-4,
+                             4.2523324806907e-5, -2.0278578112534e-5,
+                             -1.624290004647e-6, 1.303655835580e-6, 
+                             1.5626441722e-8, -8.5238095915e-8,
+                             6.529054439e-9, 5.059343495e-9,
+                             -9.91364156e-10, -2.27365122e-10,
+                             9.6467911e-11, 2.394038e-12,
+                             -6.886027e-12, 8.94487e-13,
+                             3.13092e-13, -1.12708e-13,
+                             3.81e-16, 7.106e-15,
+                             -1.523e-15, -9.4e-17,
+                             1.21e-16, -2.8e-17};
     
-double Gaussian::erfcinv(double y){
-  if (y < 0.0 || y > 2.0) return 0;
-  else if(y == 0.0) return std::numeric_limits<double>::infinity();
-  else if(y == 2.0) return -(std::numeric_limits<double>::infinity());
-  else{
-    double x;
-    if (y >= 0.0485 && y <= 1.9515){
-                    double q = y - 1.0;
-                    double r = q * q;
-                     x = (((((0.01370600482778535*r - 0.3051415712357203)*r + 1.524304069216834)*r - 3.057303267970988)*r + 2.710410832036097)*r - 0.8862269264526915) * q /
-                    (((((-0.05319931523264068*r + 0.6311946752267222)*r - 2.432796560310728)*r + 4.175081992982483)*r - 3.320170388221430)*r + 1.0);
-    }
-    else if (y < 0.0485){ 
-                    double q = sqrt (-2.0 * log (y / 2.0));
-                    x = (((((0.005504751339936943*q + 0.2279687217114118)*q + 1.697592457770869)*q + 1.802933168781950)*q + -3.093354679843504)*q - 2.077595676404383) /
-                    ((((0.007784695709041462*q + 0.3224671290700398)*q + 2.445134137142996)*q + 3.754408661907416)*q + 1.0);
-    }
-    else if (y > 1.9515){
-                    double q = sqrt (-2.0 * log (1.0 - y / 2.0));
-                    x = (-(((((0.005504751339936943*q + 0.2279687217114118)*q + 1.697592457770869)*q + 1.802933168781950)*q + -3.093354679843504)*q - 2.077595676404383) /
-                     ((((0.007784695709041462*q + 0.3224671290700398)*q + 2.445134137142996)*q + 3.754408661907416)*q + 1.0));
-    }
-    else x = 0.0;
-    double u = (erfc (x) - y) / (-2.0 / sqrt (M_PI) * exp (-x * x));
-    return x - u / (1.0 + x * u);
-  }
-}
-/// Phi   
-/// Computes the cummulative Gaussian distribution at a specified point of interest
-double Gaussian::normcdf(double t) {
-  double sqrt2 = 1.4142135623730951; 
-  return ((erfc (-t / sqrt2)) / 2.0);
-}
+    int size = sizeof coefficients / sizeof(double); //Gets length of array
+    double d = 0.0;
+    double dd = 0.0;
 
-/// Computes the Standard Gaussian density at a specified point of interest
-double Gaussian::standard_normpdf (double t){
-  double invsqrt2pi = 0.398942280401433;
-  return (invsqrt2pi * exp (- (t * t / 2.0)));
+    for (int j = size -1; j > 0; j--){
+        double tmp = d;
+        d = ty*d - dd + coefficients[j];
+        dd = tmp;
+    }
+
+    double ans = t*exp(-z*z + 0.5*(coefficients[0] + ty*d) - dd);
+    return x >= 0.0 ? ans : (2.0 - ans);
 } 
 
-///
-double Gaussian::normpdf (double t){
-  double invsqrt2pi = 0.398942280401433;
-  return ((invsqrt2pi/(this->Sigma)) * exp (- ((t-this->Mu) * (t-this->Mu) / (2.0*this->Variance))));
-} 
+double Gaussian::inverseErrorFunctionCumulativeTo (double p){
+    //Numerical Recipes 265
+    if (p >= 2.0)
+        return -100;
 
-/// PhiInverse
-/// Computes the inverse of the cummulative Gaussian distribution (qunatile function) at a specified point of interest
-double Gaussian::norminv(double p){ 
-  double sqrt2 = 1.4142135623730951; 
-  return (-sqrt2 * erfcinv (2.0 * p));
+    if (p <= 0.0)
+        return 100;
+
+    double pp = (p < 1.0) ? p : 2 - p;
+    double t = sqrt(-2*log(pp/2.0));
+    double x = -0.70711*((2.230753 + t*0.27061)/(1.0 + t*(0.99229 + t*0.04481)) - t);
+
+    for (int j = 0; j < 2; j++){
+        double err = errorFunctionCumulativeTo(x) - pp;
+        x += err/(1.12837916709551257*exp(-(x*x)) - x*err);
+    }
+
+    return p < 1.0 ? x : -x;
+}
+
+double Gaussian::inverseCumulativeTo(double x){
+    return inverseCumulativeTo(x,0,1);
+}
+
+double Gaussian::inverseCumulativeTo(double x, double mean, double standardDeviation){
+    //Numerical recipies 320
+    return mean - sqrt(2)*standardDeviation*inverseErrorFunctionCumulativeTo(2*x);
 }
 
 
-/// Computes the additive correction of a single-sided truncated Gaussian with unit variance
-double Gaussian::v_t_epsilon(double t, double epsilon){
-  double valnormcdf = normcdf(t-epsilon);
-  if(valnormcdf < 2.222758749e-162) return (-t+epsilon);
-  else return (normpdf(t - epsilon) / valnormcdf); 
-} 
 
-/// Computes the multiplicative correction of a single-sided truncated Gaussian with unit variance
-double Gaussian::w_t_epsilon(double t, double epsilon){
-  double valnormcdf = normcdf(t-epsilon);
-  if(valnormcdf < 2.222758749e-162){
-    if (t < 0.0) return 1.0;
-    else return 0.0;
-  }
-  else{
-    double vt = v_t_epsilon(t, epsilon);
-    return (vt * (vt + t - epsilon));
-  }
-}
-
-/// Computes the additive correction of a double-sided truncated Gaussian with unit variance
-double Gaussian::v0_t_epsilon(double t, double epsilon){
-  double valnormcdf = normcdf(t-epsilon) - normcdf(-epsilon - t);
-   double num = normpdf(-epsilon-t) - normpdf(epsilon -t);
-   if(abs(valnormcdf)  < 2.222758749e-162){
-   return 1;
-   }
-   else return (num/valnormcdf);
-  /*if(valnormcdf  < 2.222758749e-162){
-    if(t < 0.0) return (-t-epsilon);
-    else return ((-t)+epsilon);
-  }
-  else {
-   double num = normpdf(-epsilon-v) - normpdf(epsilon -v);
-   if(t < 0.0) return (-num/valnormcdf); 
-   else return (num/valnormcdf);
-  } 
-  */
-}  
-
-/// Computes the multiplicative correction of a double-sided truncated Gaussian with unit variance
-double Gaussian::w0_t_epsilon(double t, double epsilon){
-  //double v = abs(t);
-  double valnormcdf = normcdf(epsilon - t) - normcdf(-epsilon - t);
-  if(abs(valnormcdf)  < 2.222758749e-162) return 1.0;
-  else{
-    double vt = v0_t_epsilon(t,epsilon);
-    return (vt*vt + ((epsilon-t) * normpdf (epsilon-t) - (-epsilon-t) * normpdf (-epsilon-t))/valnormcdf);
-  }
+int main (){
+    return -1;
 }
