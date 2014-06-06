@@ -171,9 +171,13 @@ double Gaussian::w_t_epsilon(double t, double epsilon){
 
 /// Computes the additive correction of a double-sided truncated Gaussian with unit variance
 double Gaussian::v0_t_epsilon(double t, double epsilon){
-  double v = std::abs(t);
-  double valnormcdf = normcdf(t-epsilon) - normcdf(-epsilon - v);
-  if(valnormcdf  < 2.222758749e-162){
+  double valnormcdf = normcdf(t-epsilon) - normcdf(-epsilon - t);
+   double num = normpdf(-epsilon-t) - normpdf(epsilon -t);
+   if(abs(valnormcdf)  < 2.222758749e-162){
+   return 1;
+   }
+   else return (num/valnormcdf);
+  /*if(valnormcdf  < 2.222758749e-162){
     if(t < 0.0) return (-t-epsilon);
     else return ((-t)+epsilon);
   }
@@ -182,15 +186,16 @@ double Gaussian::v0_t_epsilon(double t, double epsilon){
    if(t < 0.0) return (-num/valnormcdf); 
    else return (num/valnormcdf);
   } 
+  */
 }  
 
 /// Computes the multiplicative correction of a double-sided truncated Gaussian with unit variance
 double Gaussian::w0_t_epsilon(double t, double epsilon){
-  double v = std::abs(t);
-  double valnormcdf = normcdf(epsilon - v) - normcdf(-epsilon - v);
-  if(valnormcdf  < 2.222758749e-162) return 1.0;
+  //double v = abs(t);
+  double valnormcdf = normcdf(epsilon - t) - normcdf(-epsilon - t);
+  if(abs(valnormcdf)  < 2.222758749e-162) return 1.0;
   else{
-    double vt = v0_t_epsilon(v,epsilon);
-    return (vt*vt + ((epsilon-v) * normpdf (epsilon-v) - (-epsilon-v) * normpdf (-epsilon-v))/valnormcdf);
+    double vt = v0_t_epsilon(t,epsilon);
+    return (vt*vt + ((epsilon-t) * normpdf (epsilon-t) - (-epsilon-t) * normpdf (-epsilon-t))/valnormcdf);
   }
 }
