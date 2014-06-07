@@ -158,9 +158,3 @@ double Gaussian::inverseCumulativeTo(double x, double mean, double standardDevia
     //Numerical recipies 320
     return mean - sqrt(2)*standardDeviation*inverseErrorFunctionCumulativeTo(2*x);
 }
-
-
-
-int main (){
-    return -1;
-}
