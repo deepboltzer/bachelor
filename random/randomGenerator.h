@@ -1,15 +1,16 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <eigen3/Eigen/Dense>
 
-using namespace std;
+using namespace Eigen;
 
 class randomGenerator{
 
   
   int sampleIndex;
   int dimension;
-  std::vector<double> w;
+  VectorXd w;
   
 public:
   
@@ -19,6 +20,9 @@ public:
   randomGenerator(int n, int sampleIndex);
   
   /// Fill Vector w with quasi random Samples.
-  void generate_random_sample();
+  void generateRandomSample();
+  
+  /// PrintRandomSample.
+  void printSample();
   
 };
