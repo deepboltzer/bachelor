@@ -27,6 +27,42 @@ void gameSetup::resizeTeam(int teamIndex, int size){
   this->teams.at(teamIndex) = size;
 }
 
+/// Returns number of players of the setup.
+double gameSetup::getNumberPlayers(){
+  return this->numberPlayers;
+}
+
+/// Returns number of teams of the setup.
+double gameSetup::getNumberTeams(){
+  return this->numberTeams;
+}
+
+/// Returns tau;
+double gameSetup::getTau(){
+  return this-> tau;
+}
+
+/// Returns Variance for a player with playerIndex. 
+double gameSetup::getSigma(int playerIndex){
+  return this->sigma[playerIndex];
+}
+
+/// Returns team vector.
+vector<int> gameSetup::getTeams(){
+  return this->teams;
+}
+
+/// Returns sortedPlayer vector.
+vector<int> gameSetup::getPlayers(){
+  return this->sortedPlayers;
+}
+
+/// Set the varaince player with playerIndex to value.
+void gameSetup::setSigma(int playerIndex, double value){
+  this->sigma[playerIndex] = value;
+}
+
+// Prints gameSetup.
 void gameSetup::printSetup(){
   cout << "-- This is GameSetup for your created Game: -- \n" << " - Constants are set by recommended default values of Trueskill - \n" << endl;
   cout << "teamVec: \n" << endl;
@@ -49,15 +85,3 @@ void gameSetup::printSetup(){
   cout << "Tau: " << this->tau << endl;
 }
 
-/// Test environment for gameSetup. 
-int main(void){
-  vector<int> p;
-  p.push_back(1);
-   p.push_back(2);
-    p.push_back(3);
-  vector<int> t;
-  t.push_back(1);
-  t.push_back(2);
-  gameSetup S1(p,t);
-  S1.printSetup();
-}

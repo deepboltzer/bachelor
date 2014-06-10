@@ -27,7 +27,28 @@ public:
   
   /// Generate gameSetup from number of Players.
   gameSetup(vector<int> players,vector<int> team);
- 
+  
+  /// Returns number of players of the setup.
+  double getNumberPlayers();
+
+  /// Returns number of players of the setup.
+  double getNumberTeams();
+
+  /// Returns tau;
+  double getTau();
+
+  /// Returns Variance for a player with playerIndex. 
+  double getSigma(int playerIndex);
+
+  /// Set the varaince player with playerIndex to value.
+  void setSigma(int playerIndex, double value);
+  
+  /// Returns team vector.
+  vector<int> getTeams();
+  
+  /// Returns team vector.
+  vector<int> getPlayers();
+  
   /// Resizes a team.
   void resizeTeam(int teamIndex, int size);
 
