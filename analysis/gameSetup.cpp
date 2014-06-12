@@ -42,9 +42,19 @@ double gameSetup::getTau(){
   return this-> tau;
 }
 
-/// Returns Variance for a player with playerIndex. 
-double gameSetup::getSigma(int playerIndex){
-  return this->sigma[playerIndex];
+/// Returns beta;
+double gameSetup::getBeta(){
+  return this-> beta;
+}
+
+/// Returns variance vector.
+VectorXd gameSetup::getSigma(){
+  return this->sigma;
+}
+
+/// Returns mean mu as a vector. 
+VectorXd gameSetup::getMu(){
+  return this->mu;
 }
 
 /// Returns team vector.
@@ -56,7 +66,10 @@ vector<int> gameSetup::getTeams(){
 vector<int> gameSetup::getPlayers(){
   return this->sortedPlayers;
 }
-
+/// Returns variance for a player with playerIndex.
+double gameSetup::getSigmaByIndex(int playerIndex){
+  return this->sigma[playerIndex];
+}
 /// Set the varaince player with playerIndex to value.
 void gameSetup::setSigma(int playerIndex, double value){
   this->sigma[playerIndex] = value;

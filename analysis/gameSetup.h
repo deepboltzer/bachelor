@@ -36,12 +36,21 @@ public:
 
   /// Returns tau;
   double getTau();
+  
+   /// Returns beta;
+  double getBeta();
 
   /// Returns Variance for a player with playerIndex. 
-  double getSigma(int playerIndex);
+  double getSigmaByIndex(int playerIndex);
+  
+  /// Return variance vector.
+  VectorXd getSigma();
 
   /// Set the varaince player with playerIndex to value.
   void setSigma(int playerIndex, double value);
+  
+  /// Returns Variance for a player with playerIndex. 
+  VectorXd getMu();
   
   /// Returns team vector.
   vector<int> getTeams();
