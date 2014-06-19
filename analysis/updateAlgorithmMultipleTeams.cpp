@@ -52,7 +52,7 @@ void updateAlgortithm(gameSetup S, double drawMargin){
   }
   
   /// Declaration of PlayerTeamMatrix A: 
-  MatrixXd A(n,k);
+  MatrixXd A(n,k-1);
   
   /// Set values of matrix A:
   bool first = true;
@@ -62,7 +62,7 @@ void updateAlgortithm(gameSetup S, double drawMargin){
   int upper2 = 0;
   
   for(int j = 0; j<k-1; j++){
-    /// Set values of matrix A:
+    /// Set values of matrix A, which is if dimension nx(k-1):
     if(j == 0) upper1 += S.getTeams()[j]-1;
     else upper1 = upper2;
     for(int i = lower1; i<= upper1;i++){
@@ -85,9 +85,12 @@ void updateAlgortithm(gameSetup S, double drawMargin){
   /// Set vector u and matrix C which are parameters t approximate truncated gaussian with. 
   VectorXd u = A.transpose() * S.getMu();
   VectorXd h = S.getSigma();
+  cout << "Sigma Vec: " << endl;
+  cout << h << endl;
   for(int i = 0; i<n;i++){
     h[i] +=  S.getBeta() * S.getBeta();
   }
+cout << h << endl;
   cout << "\nVector u to approximate truncated Gaussian:" << endl;
   cout << u << endl;
   cout << "\nMatrix C as covariance matrix to approximate truncated Gaussian:" << endl;
@@ -102,11 +105,9 @@ int main(void){
   p.push_back(2);
   p.push_back(3);
   p.push_back(4);
-  p.push_back(5);
-  p.push_back(6);
   vector<int> t;
+  t.push_back(1);
   t.push_back(2);
-  t.push_back(3);
   t.push_back(1);
   //t.push_back(1);
   gameSetup S1(p,t);
