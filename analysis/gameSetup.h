@@ -52,6 +52,8 @@ public:
   /// Returns Variance for a player with playerIndex. 
   VectorXd getMu();
   
+  /// Set the mean player with playerIndex to value.
+  void setMu(int playerIndex, double value);
   /// Returns team vector.
   vector<int> getTeams();
   

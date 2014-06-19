@@ -57,6 +57,11 @@ VectorXd gameSetup::getMu(){
   return this->mu;
 }
 
+/// Set the mean player with playerIndex to value.
+void gameSetup::setMu(int playerIndex, double value){
+  this->mu[playerIndex] = value;
+}
+
 /// Returns team vector.
 vector<int> gameSetup::getTeams(){
   return this->teams;
