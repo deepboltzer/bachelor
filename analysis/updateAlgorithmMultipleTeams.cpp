@@ -82,7 +82,7 @@ void updateAlgortithm(gameSetup S, double drawMargin){
   cout << "\nTeamPlayer matrix A:" << endl;
   cout << A << endl;
   
-  /// Set vector u and matrix C which are parameters t approximate truncated gaussian with. 
+  /// Set vector u and matrix C which are parameters to approximate truncated gaussian with. 
   VectorXd u = A.transpose() * S.getMu();
   VectorXd h = S.getSigma();
   cout << "Sigma Vec: " << endl;
@@ -90,12 +90,32 @@ void updateAlgortithm(gameSetup S, double drawMargin){
   for(int i = 0; i<n;i++){
     h[i] +=  S.getBeta() * S.getBeta();
   }
-cout << h << endl;
+  cout << h << endl;
   cout << "\nVector u to approximate truncated Gaussian:" << endl;
   cout << u << endl;
   cout << "\nMatrix C as covariance matrix to approximate truncated Gaussian:" << endl;
   MatrixXd C =  A.transpose() * h.asDiagonal() * A;
   cout << C << endl;
+  
+  /// TODO: Approximate truncated Gaussian:
+  VectorXd z;
+  MatrxXd Z;
+  /// Computation of update factors: 
+  
+  VectorXd v = A * C.inverse() * (z - u);
+  MatrixXd W = A * C.inverse() * (C - Z) * C.inverse() * A.transpose();
+  
+  /// Update mu and sigma: 
+  upper1 = S.getTeams()[0]-1;
+  lower1 = 0;
+  for(int j = 0; j<k-1;j++){
+    for(int i = lower1; i<= upper1;i++){
+      int t = S.getPlayers()[i]-1;
+      S.setMu()[t] += S.getSigma()[t] * S.getSigma()[t] * v[t];
+      S.setSigma()[t] = S.getSigma()[t] * sqrt(1- S.getSigma()[t] * S.getSigma()[t] * W(t,t));
+    }
+    upper1 += S.getTeams()[j];
+  }
 }
 
 /// Test environment for gameSetup. 
