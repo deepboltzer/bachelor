@@ -16,6 +16,8 @@ VectorXd ApproximationAlgorithm(VectorXd mu, MatrixXd covar, VectorXd lower, Vec
   MatrixXd L = lltOfA.matrixL(); // retrieve factor L  in the decomposition
   randomGenerator rg(N,1);
   VectorXd w = rg.getSample();
+  cout << "RandomGeneratorSample" << endl;
+  cout << w << endl;
   int n = mu.size();
   VectorXd z(n);
   double u,l;
@@ -36,9 +38,14 @@ VectorXd ApproximationAlgorithm(VectorXd mu, MatrixXd covar, VectorXd lower, Vec
         u = G1.cumulativeTo(nominator/denominator);
       }
       sum = 0;
+      
       z[i] = G1.inverseCumulativeTo(l+ w[i]*(u-l));
     }
-    approx = (k/(k+1)) * approx + (1/(k+1)) * (L*z + mu); 
+    cout << "Cumulative" << endl;
+    cout << z << endl;
+    approx = (double(k)/double(k+1)) * approx + (1.0/double(k+1)) * (L*z + mu); 
+    cout << approx << endl;
+    
   }
   return approx;
 }
@@ -113,7 +120,7 @@ void updateAlgortithm(gameSetup S, double drawMargin, vector<int> rank){
   cout << C << endl;
   
   /// Approximate mean and covariance of truncated Gaussian:
-  VectorXd z = ApproximationAlgorithm(u,C,a,b,k);
+  VectorXd z = ApproximationAlgorithm(u,C,a,b,100);
   cout << "Vector z: " << endl;
   cout << z << endl;
   MatrixXd Z;
