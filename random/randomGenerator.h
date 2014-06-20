@@ -22,6 +22,9 @@ public:
   /// Fill Vector w with quasi random Samples.
   void generateRandomSample();
   
+  /// Return the sample.
+  VectorXd getSample();
+
   /// PrintRandomSample.
   void printSample();
   

@@ -20,9 +20,12 @@ void randomGenerator::generateRandomSample()
     for(i=0;i<this->dimension;i++){
       this->w(i) = std::abs(2*((this->sampleIndex)*pow(2,double(i)/double(this->dimension+1))- floor((this->sampleIndex)*pow(2,double(i)/double(this->dimension +1)))) - 1);
     }
-     std::cout << this->w.size() << std::endl;
 }
 
+VectorXd randomGenerator::getSample()
+{
+    return this->w;
+}
 /// Print RandomSample.
 void randomGenerator::printSample(){
   for(int i=0;i<this->dimension;i++){
@@ -30,8 +33,4 @@ void randomGenerator::printSample(){
   }
 }
 
-int main(void){
-  randomGenerator rand(10,1);
-  rand.generateRandomSample();
-  rand.printSample();
-}
+
