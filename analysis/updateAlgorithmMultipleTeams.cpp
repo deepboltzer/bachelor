@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>    
 #include "gameSetup.h"
 #include "../gaussians/gaussian.h"
 #include "../random/randomGenerator.h"
@@ -120,7 +122,7 @@ void updateAlgortithm(gameSetup S, double drawMargin, vector<int> rank){
   cout << C << endl;
   
   /// Approximate mean and covariance of truncated Gaussian:
-  VectorXd z = ApproximationAlgorithm(u,C,a,b,100);
+  VectorXd z = ApproximationAlgorithm(u,C,a,b,1000);
   cout << "Vector z: " << endl;
   cout << z << endl;
   MatrixXd Z;
