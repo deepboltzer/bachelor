@@ -25,16 +25,19 @@ upper1 = 0; upper2 = 0;
 
 for j = 1 : k-1,
     upper1 = upper1 + n(j);
+    
     for i = lower1 : upper1, 
         A(i,j) = (2./(n(j)+n(j+1)));
     end
+    
     lower1 = upper1+1;
     upper2 = upper1 + n(j+1);
     lower2 = upper1 +1; 
-    disp(lower2); disp(upper2);
+    
     for i = lower2 : upper2, 
         A(i,j) = ((-2.)/(n(j)+n(j+1)));
     end
+    
     % Set integration limits
     if r(j) == r(j+1), 
         ai(j) = -epsilon;
@@ -44,11 +47,17 @@ for j = 1 : k-1,
         bi(j) = inf;
     end
 end
+
 diag = zeros(pc,pc);
+
 for k = 1 : pc,
     diag(k,k) = sigma(k)^2;
 end
+
+% Set up mean and covariance to approximate truncated gaussian
 disp(transpose(A));
 u = mu*A; C = transpose(A)*(beta^2*eye(pc)+diag)*A;
+
+% Compute value of constant function of a truncated Gaussian
 [p,e] = qsimvn( 5000, C, ai, bi );
 return
