@@ -1,6 +1,17 @@
-function [x1] = sgcc()
- [~,~] = clencur(2);
- [x1] = pqr(2,[50,50]);
+function [] = sgcc()
+ k1 = [3,1];
+ k2 = [3,3];
+ j = 0;
+ while k1 ~= 0,
+    j = j+1;
+    i = [1,1];
+    while i ~= 0,
+        i = iepe(1,i,k1,2);
+        disp(i);
+    end  
+        k1 = iess(k1,k2,2,2);
+ end
+ 
 return
 
 function [x,w] = clencur(nl)
@@ -41,7 +52,7 @@ function [value] = f(~)
     value = 1; 
 return
 
-function[ind] = iess(k1,k2,p)
+function[ind] = iess(k1,k2,p,d)
 % Drop algorithm for the iterative enumeration of all product indices for 
 % sparse grid method
 while(k1 ~= 0)
