@@ -1,17 +1,13 @@
-function [] = sgcc()
- k1 = [3,1];
- k2 = [3,3];
- j = 0;
- while k1 ~= 0,
-    j = j+1;
-    i = [1,1];
-    while i ~= 0,
-        i = iepe(1,i,k1,2);
-        disp(i);
-    end  
-        k1 = iess(k1,k2,2,2);
+function [If] = sgcc(l,d)
+ If = 0; m = l+d-1;
+ for l = d : m,
+     while k ~= 0,
+        p = 1; k1= ones(d);k(1) = m; k2 = zeros(d); k2(:) = m;
+        product = 1;
+        If = If + product;
+        k = iess(k1,k2,2,d);
+     end
  end
- 
 return
 
 function [x,w] = clencur(nl)
