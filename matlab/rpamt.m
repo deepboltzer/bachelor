@@ -1,7 +1,7 @@
 function [p,e] = rpamt(beta, epsilon, tau, mu, sigma, r,n,k,pc)
 % Ranking probability algorithm for multiple team games
 % Usage: [p] =
-% rpamt(4.166666666666667,0.13,1,[1,1,1,1],[1,1,1,1],[1,2],[2,2],2);
+% rpamt(4.166666666666667,0.13,1,[25.000,25.000,25.000,25.000],[8.333,8.333,8.333,8.333],[1,2],[2,2],4);
 % disp([p]);
 
 lower = 1;
@@ -59,5 +59,5 @@ disp(transpose(A));
 u = mu*A; C = transpose(A)*(beta^2*eye(pc)+diag)*A;
 
 % Compute value of constant function of a truncated Gaussian
-[p,e] = qsimvn( 5000, C, ai, bi );
+[p,e] = qsimvn( 5000, u, C, ai, bi );
 return

@@ -1,4 +1,4 @@
-function [ p, e ] = qsimvn( m, r, a, b )
+function [ p, e ] = qsimvn( m, mu, r, a, b )
 %
 %  [ P E ] = QSIMVN( M, R, A, B )
 %    uses a randomized quasi-random rule with m points to estimate an
@@ -26,9 +26,9 @@ function [ p, e ] = qsimvn( m, r, a, b )
 % Initialization
 %
 [n, n] = size(r); [ ch as bs ] = chlrdr( r, a, b );
-ct = ch(1,1); ai = as(1); bi = bs(1);  
-if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
-if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
+ct = ch(1,1); ai = as(1); bi = bs(1); mui = mu(1);  
+if abs(ai - mui) < 9*ct, c = phi((ai - mui)/ct); else, c = ( 1 + sign(ai) )/2; end
+if abs(bi - mui) < 9*ct, d = phi((bi - mui)/ct); else, d = ( 1 + sign(bi) )/2; end
 ci = c; dci = d - ci; p = 0; e = 0;
 ns = 12; nv = max( [ m/ns 1 ] ); 
 %q = 2.^( [1:n-1]'/n) ; % Niederreiter point set generators
@@ -43,7 +43,7 @@ for i = 1 : ns
   %
   for  j = 1 : nv
     x = abs( 2*mod( j*q + xr, 1 ) - 1 ); % periodizing transformation
-    vp =   mvndns( n, ch, ci, dci,  x, as, bs ); 
+    vp =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
     vi = vi + ( vp - vi )/j; 
   end   
   %
@@ -60,16 +60,16 @@ return
 %
 % end qsimvn
 %
-function p = mvndns( n, ch, ci, dci, x, a, b )
+function p = mvndns( n, ch, mu, ci, dci, x, a, b )
 %
 %  Transformed integrand for computation of MVN probabilities. 
 %
-y = zeros(n-1,1); s = 0; c = ci; dc = dci; p = dc; 
+y = zeros(n-1,1); s = 0; c = ci; dc = dci; p = dc;  
 for i = 2 : n
   y(i-1) = phinv( c + x(i-1)*dc ); s = ch(i,1:i-1)*y(1:i-1); 
-  ct = ch(i,i); ai = a(i) - s; bi = b(i) - s;
-  if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
-  if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
+  ct = ch(i,i); ai = a(i) - s - mu(i); bi = b(i) - s - mu(i);
+  if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; disp(c);end
+  if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; disp(d);end
   dc = d - c; p = p*dc; 
 end 
 return
