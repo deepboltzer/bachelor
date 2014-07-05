@@ -31,13 +31,13 @@ if abs(ai - mui) < 9*ct, c = phi((ai - mui)/ct); else, c = ( 1 + sign(ai) )/2; e
 if abs(bi - mui) < 9*ct, d = phi((bi - mui)/ct); else, d = ( 1 + sign(bi) )/2; end
 ci = c; dci = d - ci; p = 0; e = 0;
 ns = 12; nv = max( [ m/ns 1 ] ); 
-%q = 2.^( [1:n-1]'/n) ; % Niederreiter point set generators
-ps = sqrt(primes(5*n*log(n+1)/4)); q = ps(1:n-1)'; % Richtmyer generators
+q = 2.^( [1:n]'/(n+1)) ; % Niederreiter point set generators
+%disp(5*n*log(n+1)/4);ps = sqrt(primes(5*n*log(n+1)/4)); q = ps(1:n)'; % Richtmyer generators
 %
 % Randomization loop for ns samples
 %
 for i = 1 : ns
-  vi = 0; xr = rand( n-1, 1 ); 
+  vi = 0; xr = rand( n, 1 ); 
   %
   % Loop for nv quasirandom points
   %
@@ -61,17 +61,22 @@ return
 % end qsimvn
 %
    
-function [g] = exp(ch,y,mu,k)
- % Expectation function for genz modification.
+function [g] = expect(ch,y,mu,k,usage)
+ % Expectation function for genz modification. Used if expectation of some
+ % variable with special mean and covariance is needed. 
  s = 0; 
- for j = 1 : k,
-     s = s + C(j,k)*y(j);
+ if usage == 1, g = 1; return
+ else
+    for j = 1 : k,
+        s = s + C(j,k)*y(j);
+    end
+    g = s + mu(k);
  end
- g = s + mu(k);
 return
         
 function [ind] = ind(~)
-    ind = 1;
+% Constant function. Used if constant value of integral is needed. 
+ind = 1;
 return
 
 
@@ -79,18 +84,23 @@ function p = mvndns( n, ch, mu, ci, dci, x, a, b )
 %
 %  Transformed integrand for computation of MVN probabilities. 
 %
-y = zeros(n-1,1); s = 0; c = ci; dc = dci; p = dc;  
+y = zeros(n,1); s = 0; c = ci; dc = dci; p = dc;  g = zeros(n,1);
 for i = 2 : n
   y(i-1) = phinv( c + x(i-1)*dc ); s = ch(i,1:i-1)*y(1:i-1); 
+  g(i-1) = expect(ch,y,mu,i-1,1);
   ct = ch(i,i); ai = a(i) - s - mu(i); bi = b(i) - s - mu(i);
   if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
   if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
-  dc = d - c; p = p*dc; 
+  dc = d - c; p = p*dc*g(i-1); 
 end 
+y(n) = phinv( c + x(n)*dc );
+g(n) = expect(ch,y,mu,n,1);
+p = p*g;
 return
 %
 % end mvndns
 %
+
 function [ c, ap, bp ] = chlrdr( R, a, b )
 %
 %  Computes permuted lower Cholesky factor c for R which may be singular, 
