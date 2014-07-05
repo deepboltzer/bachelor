@@ -60,6 +60,21 @@ return
 %
 % end qsimvn
 %
+   
+function [g] = exp(ch,y,mu,k)
+ % Expectation function for genz modification.
+ s = 0; 
+ for j = 1 : k,
+     s = s + C(j,k)*y(j);
+ end
+ g = s + mu(k);
+return
+        
+function [ind] = ind(~)
+    ind = 1;
+return
+
+
 function p = mvndns( n, ch, mu, ci, dci, x, a, b )
 %
 %  Transformed integrand for computation of MVN probabilities. 
@@ -68,8 +83,8 @@ y = zeros(n-1,1); s = 0; c = ci; dc = dci; p = dc;
 for i = 2 : n
   y(i-1) = phinv( c + x(i-1)*dc ); s = ch(i,1:i-1)*y(1:i-1); 
   ct = ch(i,i); ai = a(i) - s - mu(i); bi = b(i) - s - mu(i);
-  if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; disp(c);end
-  if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; disp(d);end
+  if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
+  if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
   dc = d - c; p = p*dc; 
 end 
 return
