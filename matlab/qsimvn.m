@@ -25,10 +25,11 @@ function [ p, e ] = qsimvn( m, mu, r, a, b )
 %
 % Initialization
 %
-[n, n] = size(r); [ ch as bs ] = chlrdr( r, a, b );
+[n, n] = size(r); [ ch as bs ] = chlrdr( r, a, b ); pex = zeros(n,1);
 ct = ch(1,1); ai = as(1); bi = bs(1); mui = mu(1);  
 if abs(ai - mui) < 9*ct, c = phi((ai - mui)/ct); else, c = ( 1 + sign(ai) )/2; end
 if abs(bi - mui) < 9*ct, d = phi((bi - mui)/ct); else, d = ( 1 + sign(bi) )/2; end
+
 ci = c; dci = d - ci; p = 0; e = 0;
 ns = 12; nv = max( [ m/ns 1 ] ); 
 q = 2.^( [1:n]'/(n+1)) ; % Niederreiter point set generators
@@ -43,7 +44,7 @@ for i = 1 : ns
   %
   for  j = 1 : nv
     x = abs( 2*mod( j*q + xr, 1 ) - 1 ); % periodizing transformation
-    vp =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
+    [vp,pex] =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
     vi = vi + ( vp - vi )/j; 
   end   
   %
@@ -54,7 +55,7 @@ for i = 1 : ns
     if i > 1, e = e*sqrt( ( i - 2 )/i ); end
   end
 end
-%
+disp(pex);
 e = 3*e; % error estimate is 3 x standard error with ns samples.
 return
 %
@@ -68,7 +69,7 @@ function [g] = expect(ch,y,mu,k,usage)
  if usage == 1, g = 1; return
  else
     for j = 1 : k,
-        s = s + C(j,k)*y(j);
+        s = s + ch(j,k)*y(j);
     end
     g = s + mu(k);
  end
@@ -80,22 +81,24 @@ ind = 1;
 return
 
 
-function p = mvndns( n, ch, mu, ci, dci, x, a, b )
+function [p,pex] = mvndns( n, ch, mu, ci, dci, x, a, b )
 %
 %  Transformed integrand for computation of MVN probabilities. 
+%  p returns value for constant function and pex returns vector if function
+%  g is some expectation function. 
 %
-y = zeros(n,1); s = 0; c = ci; dc = dci; p = dc;  g = zeros(n,1);
+y = zeros(n,1); s = 0; c = ci; dc = dci; p = dc;  g = zeros(n,1); pex = zeros(n,1);
 for i = 2 : n
   y(i-1) = phinv( c + x(i-1)*dc ); s = ch(i,1:i-1)*y(1:i-1); 
-  g(i-1) = expect(ch,y,mu,i-1,1);
+  g(i-1) = expect(ch,y,mu,i-1,2);
   ct = ch(i,i); ai = a(i) - s - mu(i); bi = b(i) - s - mu(i);
   if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
   if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
-  dc = d - c; p = p*dc*g(i-1); 
+  dc = d - c; p = p*dc; 
 end 
 y(n) = phinv( c + x(n)*dc );
-g(n) = expect(ch,y,mu,n,1);
-p = p*g;
+g(n) = expect(ch,y,mu,n,2);
+pex(:,1) = p*g(:,1);
 return
 %
 % end mvndns
@@ -163,6 +166,6 @@ return
 %
 function p =   phi(z), p =  erfc( -z/sqrt(2) )/2;
 %function z = phinv(p), z = norminv( p );
- function z = phinv(p), z = -sqrt(2)*erfcinv( 2*p ); % use if no norminv
+function z = phinv(p), z = -sqrt(2)*erfcinv( 2*p ); % use if no norminv
 %
 
