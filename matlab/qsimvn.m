@@ -1,4 +1,4 @@
-function [ p, e ] = qsimvn( m, mu, r, a, b )
+function [ p, pex, e ] = qsimvn( m, mu, r, a, b )
 %
 %  [ P E ] = QSIMVN( M, R, A, B )
 %    uses a randomized quasi-random rule with m points to estimate an
@@ -25,7 +25,7 @@ function [ p, e ] = qsimvn( m, mu, r, a, b )
 %
 % Initialization
 %
-[n, n] = size(r); [ ch as bs ] = chlrdr( r, a, b ); pex = zeros(n,1);
+[n, n] = size(r); [ ch as bs ] = chlrdr( r, a, b ); vpex = zeros(n,1); pex = zeros(n:1);
 ct = ch(1,1); ai = as(1); bi = bs(1); mui = mu(1);  
 if abs(ai - mui) < 9*ct, c = phi((ai - mui)/ct); else, c = ( 1 + sign(ai) )/2; end
 if abs(bi - mui) < 9*ct, d = phi((bi - mui)/ct); else, d = ( 1 + sign(bi) )/2; end
@@ -38,24 +38,26 @@ q = 2.^( [1:n]'/(n+1)) ; % Niederreiter point set generators
 % Randomization loop for ns samples
 %
 for i = 1 : ns
-  vi = 0; xr = rand( n, 1 ); 
+  vi = 0; xr = rand( n, 1 );  viex =  zeros(n,1);
   %
   % Loop for nv quasirandom points
   %
   for  j = 1 : nv
     x = abs( 2*mod( j*q + xr, 1 ) - 1 ); % periodizing transformation
-    [vp,pex] =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
+    [vp,vpex] =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
     vi = vi + ( vp - vi )/j; 
+    viex(:,1) = viex(:,1) + (vpex(:,1) - viex(:,1))/j;
   end   
   %
   d = ( vi - p )/i; p = p + d; 
+  %dex = zeros(n,1);
+  dex(:,1) = (viex(:,1) - pex(:,1))/i; pex(:,1) = pex(:,1) + dex(:,1);
   if abs(d) > 0 
     e = abs(d)*sqrt( 1 + ( e/d )^2*( i - 2 )/i );
   else
     if i > 1, e = e*sqrt( ( i - 2 )/i ); end
   end
 end
-disp(pex);
 e = 3*e; % error estimate is 3 x standard error with ns samples.
 return
 %
