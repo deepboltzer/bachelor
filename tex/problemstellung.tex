@@ -13,7 +13,7 @@
 \usepackage{scrpage2}
 \usepackage[pdftex]{graphicx}
 \usepackage{latexsym}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb,amsthm,amstext,amsfonts,mathrsfs}
 \usepackage{latexsym}
 \usepackage{amssymb}
 
@@ -52,9 +52,11 @@
 \end{abstract}
 
 \section{Problemstellung}
+
+\subsection{Gaussian Density Filtering}
 Angenommen es sei ein Parameter $\varTheta$ mit $P(\varTheta) = N(\varTheta; \mu;\varSigma)$ und eine Likelyhood Wahrscheinlichkeit $P(x|\varTheta)$ gegeben. 
 Bezeichne die Likelyhood Wahrscheinlichkeit die Funktion $t_x(\varTheta)$, die nur vom Parameter $\varTheta$ abhängt. 
-Dann ist die Wahrscheinlichkeit $P(\varTheta|x)$ nicht länger gaußverteilt, 
+Dann ist die Wahrscheinlichkeit $P(\varTheta|x)$ nicht zwingend länger gaußverteilt, 
 
 \begin{equation}
   P(\varTheta|x) = \frac{t_x(\varTheta)P(\varTheta)}{\int t_x(\varTheta^{'})P(\varTheta^{'})d\varTheta^{'}}
@@ -72,4 +74,87 @@ Im Allgemeinen ergeben sich
   g_x := \frac{\partial log(Z_x(\mu^{'},\varSigma^{'}))}{\partial \mu^{'}}, \text{			} G_x := \frac{\partial log(Z_x(\mu^{'},\varSigma^{'}))}{\partial \varSigma^{'}}
  \end{equation}
 gegeben sind. 
+
+\subsection{Multidimensional korrigiert und abgeschnittene Gaußverteilung}
+Wir nennen x korrigiert und abgeschnitten gaußverteilt, wenn $\mathbf{x} \sim \mathcal{R}(\mathbf{x};\mathbf{\mu},\mathbf{\varSigma}^2,\mathbf{\alpha},\mathbf{\beta})$ und dies bedeutet, dass die Dichte von $\mathbf{x}$ durch 
+
+gegeben ist.
+Es gibt keine effizienten analytischen Ausdrücke für die Normalisierungskonstante und jegliche Momente dieser Verteilung. Ist die Dimension von $x$ jedoch nicht zu groß, so lassen sich die 
+Normalisierungskonstante und Momente mithilfe des Genz Algorithmus approximieren. 
+
+\subsection{Transformationstechniken und Genz Algorithmus}
+Im vorherigen Abschnitt haben wir gesehen, dass Integrale der Form
+
+\begin{equation}
+ F(\mathbf{\alpha},\mathbf{\beta}) = (2\pi)^{-\frac{n}{2}} |\Sigma|^{-\frac{1}{2}} \int_{\alpha_1}^{\beta_1} ... \int_{\alpha_n}^{\beta_n} exp(-\frac{1}{2}(\mathbf{x}-\mathbf{\mu})^T \mathbf{\Sigma}^{-1}(\mathbf{x}-\mathbf{\mu)}) g(\mathbf{x}) dx
+\end{equation}
+
+gelöst werden müssen. 
+Auch wenn die in vorgestellten Integrationsmethoden in manchen Fällen zu einer Lösung dieses Integrals führen würden, wird die Konvergenz dieser Verfahren durch die hier vorgestellten
+Verfahren deutlich verbessert. Das Hauptaugenmerk soll dabei auf der Transformation auf den Einheitswürfel $(0,1)^d$ liegen, um das so erhaltene Integral dann mithilfe von verschiedenen
+Integrationsmethoden leicht lösen zu können. 
+
+In einem ersten Schritt kann der Einfluss des Erwartungswertes $\mathbf{\mu}$ durch die geschickte Substitution $\mathbf{y} = \mathbf{x} - \mathbf{\mu}$ eliminiert werden,
+
+\begin{equation}
+  F(\mathbf{\alpha},\mathbf{\beta}) = (2\pi)^{-\frac{n}{2}} |\Sigma|^{-\frac{1}{2}} \int_{\alpha_1 -\mu_1}^{\beta_1-\mu_1} ... \int_{\alpha_n - \mu_n}^{\beta_n - \mu_n} exp(-\frac{1}{2} \mathbf{y}^T \mathbf{\Sigma}^{-1}\mathbf{y}) g(\mathbf{y} + \mathbf{\mu}) dx
+\end{equation}
+
+Sei nun $\mathbf{\Sigma = L L^T}$ die Cholesky-Zerlegung der Kovarianzmatrix $\mathbf{\Sigma}$ und $\mathbf{L}$ dabei untere Dreiecksmatrix, dann schreibe $\mathbf{y = Lz}$. Da 
+$\mathbf{y}$ untere Dreicksmatrix ist, kann $\mathbf{z}$ iterativ durch 
+
+\begin{equation}
+ z_i = \frac{y_i - \sum_{j=1}^{i-1} L_{i,j}z_j}{L_{i,i}}
+\end{equation}
+
+bestimmt werden. Durch die positiv Definitheit von $\Sigma$ gilt stets $L_{i,i} > 0$ und $z_i$ ist strikt monoton steigende Funktion in Abhängigkeit von $y_i$.
+Außerdem gilt $\mathbf{y^T\Sigma^{-1}y}$ \\ $ \mathbf{= z^TL^T(LL^T)^{-1}Lz} = \mathbf{z^Tz} $ und 
+
+\begin{equation}
+ d\mathbf{y} = |\mathbf{L}|d \mathbf{z} = |\mathbf{\Sigma}^{\frac{1}{2}}| d \mathbf{z}.
+\end{equation}
+
+Mit diesen zwei Eigenschaften lässt sich (1.5) umformen zu 
+
+\begin{equation}
+  F(\mathbf{\alpha},\mathbf{\beta}) = (2\pi)^{-\frac{n}{2}} |\Sigma|^{-\frac{1}{2}} \int_{\alpha_1'}^{\beta_1'} \mathcal{N}(z_1) \int_{\alpha_n'(z_1)}^{\beta_n'(z_1)} \mathcal{N}(z_2) \text{ ...} \int_{\alpha_n'(z_1,...,z_n)}^{\beta_n'(z_1,...,z_n)} \mathcal{N}(z_n) g(\mathbf{y} + \mathbf{\mu}) dx
+\end{equation}
+
+, wobei Funktionen $\alpha'$ und $\beta'$ durch 
+
+\begin{equation}
+  \begin{split}
+    \alpha_i'(z_1,...,z_{i-1})  &=  \frac{\alpha_i - \mu_i - \sum_{j=1}^{i-1} L_{i,j}z_j}{L_{i,i}} \\
+    \beta_i'(z_1,...,z_{i-1})   &=  \frac{\beta_i - \mu_i - \sum_{j=1}^{i-1} L_{i,j}z_j}{L_{i,i}} 
+  \end{split}
+\end{equation}
+
+Als nächster Schritt wird eine Transformation der einzelnen Koordination mit der inversen Normalverteilung $\Phi^{-1}(z_i) = v_i$ durchgeführt. Damit ergibt sich mit
+
+\begin{equation}
+\begin{split}
+ \alpha_i''(v_1,...,v_{i-1})&=  \Phi (\frac{\alpha_i - \mu_i - \sum_{j=1}^{i-1} L_{i,j}\Phi^{-1}(v_j)}{L_{i,i}} )\\
+ \beta_i''(v_1,...,v_{i-1})&=  \Phi(\frac{\beta_i - \mu_i - \sum_{j=1}^{i-1} L_{i,j}\Phi^{-1}(v_j)}{L_{i,i}} )
+ \end{split}
+\end{equation}
+
+für $F(\alpha,\beta)$ die Darstellung
+
+\begin{equation}
+  F(\mathbf{\alpha},\mathbf{\beta}) = \int_{\alpha_1''}^{\beta_1''} \int_{\alpha_2'(v_1)}^{\beta_2'(v_1)} \text{ ...} \int_{\alpha_n'(v_1,...,v_n)}^{\beta_n'(v_1,...,v_n)} g(\mathbf{L}[\Phi^{-1}(v_1),...,\Phi^{-1}(v_n)] + \mathbf{\mu}) d\mathbf{v}
+\end{equation}
+
+Zum Schluss führt eine Anwendung des Transformationssatz mit der linearen Transformation $v_i = \alpha_i'' + w_i(\beta_i''-\alpha_i'')$ zu
+
+\begin{equation}
+  F(\mathbf{\alpha},\mathbf{\beta}) = (\alpha_1'' \beta_1'') \int_{0}^{1} \text{ ...}(\alpha_n'' \beta_n'') \int_{0}^{1} g(\mathbf{L}[\Phi^{-1}(v_1),...,\Phi^{-1}(v_n)] + \mathbf{\mu}) d\mathbf{w}
+\end{equation}
+
+, wobei $w_i$ uniform in $[0,1]$ verteilt ist.
+
+Wir wollen bemerken, dass $F$ als die Erwartung der Funktion $g(\mathbf{y(w)})$ interpretiert werden kann. Es ist klar, dass diese Erwartung invariant unter Permutation der Indizes
+von $\mathbf{w}$ ist. Diese Darstellung erlaubt die direkte Anwendung von mehrdimensionalen Integrationsmethoden.
+Auch ist an Gleichung (1.12) zu erkennen, dass sich das Integrationsproblem um eine Dimension
+reduziert hat, da die rechte Seite der Gleichung nicht von $w_n$ abhängt und diese Variable daher
+herausintegriert werden kann.
  \end{document}
