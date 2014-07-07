@@ -1,4 +1,4 @@
-function [p,e] = rpamt(beta, epsilon, tau, mu, sigma, r,n,k,pc)
+function [p,pex,e] = rpamt(beta, epsilon, tau, mu, sigma, r,n,k,pc)
 % Ranking probability algorithm for multiple team games
 % Usage: [p] =
 % rpamt(4.166666666666667,0.13,1,[25.000,25.000,25.000,25.000],[8.333,8.333,8.333,8.333],[1,2],[2,2],4);
@@ -57,7 +57,8 @@ end
 % Set up mean and covariance to approximate truncated gaussian
 disp(transpose(A));
 u = mu*A; C = transpose(A)*(beta^2*eye(pc)+diag)*A;
-
+disp(u);
+pex = 0; 
 % Compute value of constant function of a truncated Gaussian
-[p,e] = qsimvn( 5000, u, C, ai, bi );
+[p,pex,e] = qsimvn( 5000, u, C, ai, bi );
 return
