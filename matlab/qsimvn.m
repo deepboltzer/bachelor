@@ -1,4 +1,4 @@
-function [ p, pex, e ] = qsimvn( m, mu, r, a, b )
+function [ p, pex, psig, e ] = qsimvn( m, mu, r, a, b )
 %
 %  [ P E ] = QSIMVN( M, R, A, B )
 %    uses a randomized quasi-random rule with m points to estimate an
@@ -30,7 +30,7 @@ ct = ch(1,1); ai = as(1); bi = bs(1); mui = mu(1);
 if abs(ai - mui) < 9*ct, c = phi((ai - mui)/ct); else, c = ( 1 + sign(ai) )/2; end
 if abs(bi - mui) < 9*ct, d = phi((bi - mui)/ct); else, d = ( 1 + sign(bi) )/2; end
 
-ci = c; dci = d - ci; p = 0; e = 0;
+ci = c; dci = d - ci; p = 0; e = 0; psig = 0; 
 ns = 12; nv = max( [ m/ns 1 ] ); 
 q = 2.^( [1:n]'/(n+1)) ; % Niederreiter point set generators
 %disp(5*n*log(n+1)/4);ps = sqrt(primes(5*n*log(n+1)/4)); q = ps(1:n)'; % Richtmyer generators
@@ -38,20 +38,22 @@ q = 2.^( [1:n]'/(n+1)) ; % Niederreiter point set generators
 % Randomization loop for ns samples
 %
 for i = 1 : ns
-  vi = 0; xr = rand( n, 1 );  viex =  zeros(n,1);
+  vi = 0; xr = rand( n, 1 );  viex =  zeros(n,1); visig = 0;
   %
   % Loop for nv quasirandom points
   %
   for  j = 1 : nv
     x = abs( 2*mod( j*q + xr, 1 ) - 1 ); % periodizing transformation
-    [vp,vpex] =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
+    [vp,vpex,vpsig] =   mvndns( n, ch, mu, ci, dci,  x, as, bs ); 
     vi = vi + ( vp - vi )/j; 
     viex(:,1) = viex(:,1) + (vpex(:,1) - viex(:,1))/j;
+    visig = visig + (vpsig - visig)/j;
   end   
   %
   d = ( vi - p )/i; p = p + d; 
   %dex = zeros(n,1);
   dex(:,1) = (viex(:,1) - pex(:,1))/i; pex(:,1) = pex(:,1) + dex(:,1);
+  dsig = (visig - psig)/i; psig = psig + dsig;
   if abs(d) > 0 
     e = abs(d)*sqrt( 1 + ( e/d )^2*( i - 2 )/i );
   else
@@ -64,43 +66,47 @@ return
 % end qsimvn
 %
    
-function [g] = expect(ch,y,mu,k,usage)
+function [g] = expect(ch,y,mu,k)
  % Expectation function for genz modification. Used if expectation of some
  % variable with special mean and covariance is needed. 
  s = 0; 
- if usage == 1, g = 1; return
- else
-    for j = 1 : k,
-        s = s + ch(j,k)*y(j);
-    end
-    g = s + mu(k);
+ for j = 1 : k,
+    s = s + ch(j,k)*y(j);
  end
+ g = s + mu(k);
 return
-        
+
+function [sig] = covar(ch,y,mu,k,j)
+ sig = expect(ch,y,mu,k)*expect(ch,y,mu,j);
+return
 function [ind] = ind(~)
 % Constant function. Used if constant value of integral is needed. 
 ind = 1;
 return
 
 
-function [p,pex] = mvndns( n, ch, mu, ci, dci, x, a, b )
+function [p,pex,sig] = mvndns( n, ch, mu, ci, dci, x, a, b )
 %
 %  Transformed integrand for computation of MVN probabilities. 
 %  p returns value for constant function and pex returns vector if function
 %  g is some expectation function. 
 %
-y = zeros(n,1); s = 0; c = ci; dc = dci; p = dc;  g = zeros(n,1); pex = zeros(n,1);
+y = zeros(n,1); s = 0; c = ci; dc = dci; p = dc;  gex = zeros(n,1); 
+gsig = zeros(n,1); pex = zeros(n,1);
 for i = 2 : n
   y(i-1) = phinv( c + x(i-1)*dc ); s = ch(i,1:i-1)*y(1:i-1); 
-  g(i-1) = expect(ch,y,mu,i-1,2);
+  gex(i-1) = expect(ch,y,mu,i-1);
+  gsig(i-1) = covar(ch,y,mu,i-1,i-1);
   ct = ch(i,i); ai = a(i) - s - mu(i); bi = b(i) - s - mu(i);
   if abs(ai) < 9*ct, c = phi(ai/ct); else, c = ( 1 + sign(ai) )/2; end
   if abs(bi) < 9*ct, d = phi(bi/ct); else, d = ( 1 + sign(bi) )/2; end
   dc = d - c; p = p*dc; 
 end 
 y(n) = phinv( c + x(n)*dc );
-g(n) = expect(ch,y,mu,n,2);
-pex(:,1) = p*g(:,1);
+gex(n) = expect(ch,y,mu,n);
+gsig(n) = covar(ch,y,mu,n,n);
+pex(:,1) = p*gex(:,1);
+sig = p*gsig(:,1);
 return
 %
 % end mvndns
