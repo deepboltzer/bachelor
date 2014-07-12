@@ -27,6 +27,9 @@
 % Abstand obere Blattkante zur Kopfzeile ist 2.54cm - 15mm
 \setlength{\topmargin}{-15mm}
 
+\newcommand{\changefont}[3]{
+\fontfamily{#1} \fontseries{#2} \fontshape{#3} \selectfont}
+\changefont{cmr}{m}{n}
 
 % Umgebungen für Definitionen, Sätze, usw.
 % Es werden Sätze, Definitionen etc innerhalb einer Section mit
@@ -91,8 +94,6 @@
   % Ab sofort Seitenzahlen in der Kopfzeile anzeigen
   \pagestyle{useheadings}
 
-\section{Motivation}
-
 Das Problem n Spieler zu bewerten ist ein wichtiger Forschungsbereich des Maschinellen Lernens. \\
 Aus der Kombinatorik lässt sich schnell herleiten, dass es $n!$ verschiedene Möglichkeiten gibt n Spieler in einem Ranking zu bewerten. 
 Ziel ist es das eine Ranking zu finden, welches das tatsächliche Können der einzelnen Spieler am besten wiederspiegelt. 
@@ -106,6 +107,16 @@ Betrachten wir Spiele bei denen $k$ Teams gegeneinander antreten und bewertet we
 aussagekräftige Spielausgänge benötigt. 
 Man wird sehen, dass das hier vorgestellte Verfahren für das betrachtete Problem nahezu optimal ist, also bis auf geringe Abweichungen gegen die oben genannten Schranken konvergiert. 
 
+\section{Motivation}
+
+Skill Ratings erfüllen bei Online Spielen auf Konsolen (z.B. XBOX 360) und im Sport drei hauptsächliche Funktionen. Erstens lassen sich damit interessante und ausbalancierte, teambasierte
+Spiele zwischen Spielern mit ähnlichem Skill erzeugen. Zweitens ist es möglich Skills und Rankings für Spieler öffentlich zu machen, um damit zwischen den Spielern einen Wettbewerb zu erzeugen. 
+Dirttens können Ratings als Qualifikationskriterium für Turniere verwendet werden. 
+Mit dem steigenden Interesse an Online Spielen in den Letzten Jahren, ist auch das Interesse an effektiven Rating Systemen für Modelle mit Millionen Spielern pro Tag 
+stark angestiegen.\\
+1959 entwickelte Arpad Elo ein statistisches Rating System für Schach Spieler, welches von der \textit{"World Chess Federation FIDE"} 1970 offiziell anerkannt wurde.
+Die grundlegende Idee des \textit{Elo Rating Systems} ist es den möglichen Ausgang eines Spieles als Funktion der beiden Spieler Ratings $s_1$ und $s_2$ zu modellieren. 
+In jedem Spiel weißt ein Spieler eine gewisse \textit{Performanz} $p_i \sim \mathcal{N}(p_i;s_i,\beta^2)$. Es wird angenommen, dass diese \textit{Performanz} normalverteilt mit
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
