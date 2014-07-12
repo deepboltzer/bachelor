@@ -91,7 +91,7 @@
   % Ab sofort Seitenzahlen in der Kopfzeile anzeigen
   \pagestyle{useheadings}
 
-\section{Einleitung}
+\section{Motivation}
 
 Das Problem n Spieler zu bewerten ist ein wichtiger Forschungsbereich des Maschinellen Lernens. \\
 Aus der Kombinatorik lässt sich schnell herleiten, dass es $n!$ verschiedene Möglichkeiten gibt n Spieler in einem Ranking zu bewerten. 
@@ -133,31 +133,58 @@ Falls ein Team $u$ vor einem Team $v$ platziert wurde, so ist es wahrscheinliche
 
 \section{Bayssche Methodik}
 
-Natürlich kennt man den Skill eines Spielers nie mit absoluter Sicherheit. Deshalb wird das Problem aus einer Baysschen Sichtweise betrachtet. Dabei wird der Glaube an den Skill eines
-Spielers durch eine Wahrscheinlichkeitsverteilung $P(\textbf{s})$ beschrieben. Im folgenden wird angenommen, dass diese Verteilung einer multivariaten Gaußverteilung entspricht, deren Kovarianzmatrix
-nur Einträge auf der Diagonalen hat ($P(\textbf{s}) = N(\textbf{s},\mu,diag(\sigma^2))$ ). Diese Annahme hat einige Vorteile: 
+Offensichtlich kennen wir den Skill eines Spielers nie mit absoluter Sicherheit. Deshalb basieren das Trueskill, sowie viele andere bekannte Verfahren auf Baysschen Modellen. Dazu beschreiben wir den Skill eines
+Spielers durch eine Wahrscheinlichkeitsverteilung $P(\textbf{s})$. Wir nehmen außerdem an, dass diese Verteilung einer multivariaten Gaußverteilung entspricht, deren Kovarianzmatrix
+Diagonalmatrix mit Einträgen $\sigma_i^2$ ($P(\mathbf{s}) = \mathcal{N}(\mathbf{s},\mathbb{\mu},\mathbf{diag(\sigma^2)})$ ). Diese Annahme hat einige Vorteile: 
 \begin{enumerate}
- \item Die Verteilung ist unimodal in $\mu \in \R^n$. Ein Spieler hat deshalb genau einen unbekannten Skill. Dieser schwankt nicht unerwartet zwischen verschiedenen Spiel Leveln.
+ \item Die Verteilung ist unimodal in $\mu \in \R^n$. Ein Spieler hat deshalb genau einen unbekannten Skill. Dieser schwankt nicht unerwartet zwischen verschiedenen Spielen.
  \item Die Verteilung impliziert einfache Skillupdate Funktionen. (Siehe \textbf{TODO: Kapitel einfügen!})
  \item Die Verteilung kann Speichereffizient implementiert werden. Eine Diagonalmatrix kann leicht als Vektor abgespeichert werden. Der mittlere Skill $\mu_i$ und die Skillvarianz $\sigma_i^2$ sind für jeden Spieler 
  Konstanten.
 \end{enumerate}
 
 \subsection{Spielausgangsbasierte Updates}
-Nachdem der Ausgang eines Spieles in Form eines Vektor, deren Einträge die Platzierungen der Spieler wiederspiegelen, wird die Verteilung der Skills aller Spieler $P(\textbf{s})$
-mithilfe der Baysschen Regel aktualisiert: 
+Sei $\mathbf{r}$ der beobachtete Ausgang eines Spieles. Wir nehmen an, dass $\mathbf{r}$ als Vektor vorliegt, deren Einträge die Platzierungen der Spieler wiederspiegelen. So können wir die Skills aller Spieler $P(\textbf{s})$
+mithilfe der Baysschen Regel aktualisieren: 
 
 \begin{equation}
- P(s|r,\{i_1,...,i_k\}) = \frac{P(r|s,\{i_1,...,i_k\}P(s|\{i_1,...,i_k\}))}{P(r|\{i_1,...,i_k\})} = \frac{P(s|S(s,i_1),...,S(s,i_k)\})P(s)}{P(r|\{i_1,...,i_k\})}
-\end{equation}
+ \begin{split}
+ P(s|r,\{i_1,...,i_k\}) &= \frac{P(r|s,\{i_1,...,i_k\}P(s|\{i_1,...,i_k\}))}{P(r|\{i_1,...,i_k\})} \\ 
+ &= \frac{P(s|S(s,i_1),...,S(s,i_k)\})P(s)}{P(r|\{i_1,...,i_k\})}
+ \end{split}
+ \end{equation}
 
-Diese neue Verteilung wird \textit{Posterior} Verteilung genannt und wird im darauf folgenden Spiel für $P(s)$ benutzt.
+Diese neue Verteilung wird \textit{Posterior} Verteilung genannt und wird im nachfolgenden Spiel für $P(s)$ benutzt.
 Diese Art der Vorgehensweise ist als \textit{on-line learning} bekannt: Jederzeit existiert nur eine Verteilung $P(s)$, die durch jeden Spielausgang
-beeinflusst wird. Es wird außerdem angenommen, dass die \textit{Posterior} Verteilung alle verfügbaren Informationen enthält. In der Praxis ist es schwer diese Größe exakt, kompakt 
-und effizient darzustellen. Deshalb wird sie meist z.B. mithilfe von Methoden, wie ADF approximiert und mit der approximierten Größe weiter gerechnet. 
-Mit solchen Approximationen wird sich in Kapitel befasst. \textbf{TODO: Kapitel einfügen!}
+beeinflusst wird. Wir nehmen außerdem an, dass die \textit{Posterior} Verteilung alle verfügbaren Informationen enthält. In der Praxis ist es schwer diese Größe exakt, kompakt 
+und effizient darzustellen. Deshalb wird sie meist z.B. mithilfe von geeigneten Methoden approximiert. 
+Wir stellen in dieser Arbeit zwei unterschiedliche Vorgehensweise dar um dieses Problem zu lösen. Ein auf Faktorgraphen und dem Expectation Propagation Algorithmus basierender Ansatz wird in Kapitel
+\textbf{TODO: Kapitel einfügen!} vorgestellt. In Kapitel \textbf{TODO: Kapitel einfügen!} wählen wir einen direkten Ansatz und versuchen auftretende Integrale numerisch möglichst effizient zu approximieren. 
+
 \subsection{Zeitabhängige Updates}
 
+Die bis hierhin beschriebene Vorgehensweise macht eine durchaus starke Annahme: \\
+Die Skills aller Spieler, $\mu$, sind zeitunabhängig.\\
+Dies ist in der Realität meist jedoch nicht der Fall. Denn Spieler können zum Beispiel mit der Zeit mehr über das Spiel lernen oder spielen eine Zeit lang nicht und 
+werden wieder schlechter. 
+\\
+Wir sind deshalb an einem \textit{Posterior} $P(s_i| \vartriangle t)$, welcher impliziert, dass ein Spieler mit Index $i$ eine Zeit lang $\vartriangle t$ nicht gespielt hat.
+Dazu benötigen wir ein Maß $P(\vartriangle \mu | \vartriangle t)$ für die Änderung des Skills $\vartriangle \mu$ des Spielers in der Zeit $\vartriangle t$.
+Wir folgen dem Trueskill Modell nach Herbrich (Literatur) und nehmen an, dass der Skill eines Spielers in dieser Zeit steigt oder fällt und das Ausmaß der Änderung durch eine Funktion $\tau$ in
+Abhängigkeit von $\vartriangle t$ beschrieben wird.
+Damit erhalten wir $P(\vartriangle \mu | \vartriangle t) = \mathcal{N}(\vartriangle \mu; 0;\tau^2(\vartriangle t))$.
+Übertragen wir dieses Modell auf die Skills $s_i$ der einzelnen Spieler so erhalten wir: 
+
+\begin{equation}
+\begin{split}
+ P(s_i|\vartriangle t ) &= \int P(s_i| \mu_i + \vartriangle \mu)P(\vartriangle \mu | \vartriangle t) d(\vartriangle \mu) \\
+ &= \int \mathcal{N}(s_i; \mu_i + \vartriangle \mu, \sigma_i^2)  \mathcal{N}(\vartriangle \mu; 0, \tau^2(\vartriangle t)) d(\vartriangle y) \\
+ &= \int \mathcal{N}(s_i;\mu)\mathcal{N}(\mu; \mu_i, \tau^2(\vartriangle t)) d \mu \\
+ &= \mathcal{N}(s_i;\mu_i,\sigma_i^2 + \tau^2(\vartriangle t)) \\
+ \end{split}
+\end{equation}
+
+Wir werden in dieser Arbeit $\tau$ als konstant $\tau_0$ annehmen.
 \section{Wahrscheinlichkeitstheorie}
 Dieses Kapitel gibt einen Überblick über einige wichtige Konzepte der Wahrscheinlichkeitstheorie.
 Im Folgenden werden Mengen mit Großbuchstaben, z.B. $X$, und deren Elemente mit Kleinbuchstaben, z.B $x$,
