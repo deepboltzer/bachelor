@@ -112,10 +112,10 @@ Man wird sehen, dass das hier vorgestellte Verfahren für das betrachtete Proble
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Das Ranking Problem}
 
-In dieser Arbeit werden Spiele betrachtet, bei denen mehrere Teilnehmende Teams bewertet werden sollen. Falls zwei Spieler oder Teams dieselbe Bewertung erhalten, sagen wir das 
-das Spiel unentschieden ausgegangen ist. 
-Im Spezialfall von zwei Teams gibt es genau drei mögliche Spielausgänge: Sieg, Niederlage oder unentschieden. \\
-Nummerieren wir alle teilnehmenden Spieler eines Spiels von Eins bis n, so kann ein Spiel zwischen $k$ Teams vollständig durch die $k$ Indizes $i_{j} \in \{ 1,...,n \} $ der $n_{j}$ Spieler
+Wir betrachten im Folgenden Spiele, bei denen Spieler in zwei oder mehr Teams gegeneinander antreten. Sind nur zwei Spieler vorhanden, so betrachten wir die beiden Spieler als zwei Teams
+die gegeneinander antreten. Falls zwei Spieler oder Teams dieselbe Bewertung erhalten, sagen wir das das Spiel unentschieden ausgegangen ist. 
+Im einfachen Fall von nur zwei gegeneinander antretenden Teams, sind nur drei Spielausgänge möglich: Sieg, Niederlage oder unentschieden. \\
+Nummerieren wir alle teilnehmenden Spieler eines Spiels von 1 bis n, so kann ein Spiel zwischen $k$ Teams vollständig durch die $k$ Indizes $i_{j} \in \{ 1,...,n \} $ der $n_{j}$ Spieler
 im $j$-ten Team beschrieben werden. Der von jedem Team erreichte Rang sei dann definiert als $\textbf{r}:= (r_{1},...,r_{k})^T \in \{ 1,...k \}^{k}$. Es wird davon ausgegangen, dass
 dass der Gewinner eines Spiels den Rang 1 erhält. \\
 Gesucht wird nach dem Skill $s_{i}$ eines jeden Spielers, $\textbf{s} \in \R^{n}$; wobei der Skill des $j$-ten Teams eine Funktion $S(s_{i_j})$ in Abhängigkeit aller Skills
@@ -129,10 +129,34 @@ Falls ein Team $u$ vor einem Team $v$ platziert wurde, so ist es wahrscheinliche
  S(s_{i_{u}}) \geq S(s_{i_{v}}) \Rightarrow P(\text{ Team u gewinnt }) > P(\text{ Team v gewinnt })
 \end{equation}
 
-
 \end{Definition}
 
+\section{Bayssche Methodik}
 
+Natürlich kennt man den Skill eines Spielers nie mit absoluter Sicherheit. Deshalb wird das Problem aus einer Baysschen Sichtweise betrachtet. Dabei wird der Glaube an den Skill eines
+Spielers durch eine Wahrscheinlichkeitsverteilung $P(\textbf{s})$ beschrieben. Im folgenden wird angenommen, dass diese Verteilung einer multivariaten Gaußverteilung entspricht, deren Kovarianzmatrix
+nur Einträge auf der Diagonalen hat ($P(\textbf{s}) = N(\textbf{s},\mu,diag(\sigma^2))$ ). Diese Annahme hat einige Vorteile: 
+\begin{enumerate}
+ \item Die Verteilung ist unimodal in $\mu \in \R^n$. Ein Spieler hat deshalb genau einen unbekannten Skill. Dieser schwankt nicht unerwartet zwischen verschiedenen Spiel Leveln.
+ \item Die Verteilung impliziert einfache Skillupdate Funktionen. (Siehe \textbf{TODO: Kapitel einfügen!})
+ \item Die Verteilung kann Speichereffizient implementiert werden. Eine Diagonalmatrix kann leicht als Vektor abgespeichert werden. Der mittlere Skill $\mu_i$ und die Skillvarianz $\sigma_i^2$ sind für jeden Spieler 
+ Konstanten.
+\end{enumerate}
+
+\subsection{Spielausgangsbasierte Updates}
+Nachdem der Ausgang eines Spieles in Form eines Vektor, deren Einträge die Platzierungen der Spieler wiederspiegelen, wird die Verteilung der Skills aller Spieler $P(\textbf{s})$
+mithilfe der Baysschen Regel aktualisiert: 
+
+\begin{equation}
+ P(s|r,\{i_1,...,i_k\}) = \frac{P(r|s,\{i_1,...,i_k\}P(s|\{i_1,...,i_k\}))}{P(r|\{i_1,...,i_k\})} = \frac{P(s|S(s,i_1),...,S(s,i_k)\})P(s)}{P(r|\{i_1,...,i_k\})}
+\end{equation}
+
+Diese neue Verteilung wird \textit{Posterior} Verteilung genannt und wird im darauf folgenden Spiel für $P(s)$ benutzt.
+Diese Art der Vorgehensweise ist als \textit{on-line learning} bekannt: Jederzeit existiert nur eine Verteilung $P(s)$, die durch jeden Spielausgang
+beeinflusst wird. Es wird außerdem angenommen, dass die \textit{Posterior} Verteilung alle verfügbaren Informationen enthält. In der Praxis ist es schwer diese Größe exakt, kompakt 
+und effizient darzustellen. Deshalb wird sie meist z.B. mithilfe von Methoden, wie ADF approximiert und mit der approximierten Größe weiter gerechnet. 
+Mit solchen Approximationen wird sich in Kapitel befasst. \textbf{TODO: Kapitel einfügen!}
+\subsection{Zeitabhängige Updates}
 
 \section{Wahrscheinlichkeitstheorie}
 Dieses Kapitel gibt einen Überblick über einige wichtige Konzepte der Wahrscheinlichkeitstheorie.
@@ -429,7 +453,7 @@ $$
  \end{array}
  $$
  wobei die dritte Zeile aus der Definition und der Tatsache folgt, dass sich Wahrscheinlichkeitsdichten
- zu Einer zusammenfassen lassen. Dies zeigt die zweite Aussage. \Square
+ zu Einer zusammenfassen lassen. Dies zeigt die zweite Aussage. 
 \end{Beweis}
 
 
@@ -460,7 +484,35 @@ $x_{1} = w_{1},...,x_{n} = w_{n} $. \\
 Im weiteren sind Funktionen mit Urbild $W$ von besonderem Interesse. Sei $g: W \rightarrow R$ eine solche Funktion, auch gloabele
 Funktion genannt. Im Moment beziehe sich der Wertebereich auf die Reellen Zahlen. Im Allgemeinen sei jedoch jeder beliebige Semiring erlaubt. \\
 
-%Beispiel einfügen
+\subsection{Beispiel}
+
+Beispielsweise jeder lineare Binärblockcode kann durch eine Menge von Paritätstestgleichungen beschrieben werden, sodass jede
+Gleichung eine Bedingung an das Codewort $x = (x_1,...,x_n)$ beschreibt, z.B, $\sum_{i \in E} x_i = 0$. 
+Der zu einem Binärcode mit der angegebenen Paritätsmatrix  
+
+\begin{equation}
+H =
+  \begin{pmatrix}
+  1 & 1 & 0 & 1 & 0 & 0 & 0  \\
+  0 & 0 & 1 & 1 & 0 & 1 & 0  \\
+  0 & 0 & 0 & 1 & 1 & 0 & 1 	
+ 
+ \end{pmatrix}
+\end{equation}
+korrespondierende Faktorgraph wird in Figur () gezeigt.
+
+\subsection{Indikatorfunktion und Posterior Wahrscheinlichkeit}
+
+Anlehnend an das vorherige Beispiel, sei $(x_1,...,x_n)$ ein gleichverteilt gezogenes Codewort, dass über einen Speicherlosen Kanal 
+übermittelt werden soll und $y = (y_1,...,y_n)$ die gesamte Ausgabe des Kanals. Die gemeinsame \textit{a posterior} Wahrscheinlichkeit
+vin $\{x_1,...,x_n\}$ kann dann durch eine Funktion $f$ ausgedrückt werden
+
+\begin{equation}
+ f(x_1,...,x_n) = \prod_{E \in Q} f_E(x_E) \prod_{i=1}^n f(y_i|x_i).
+\end{equation}
+
+Dabei ist für jeden Wert von $x_i$, $f(y_i|x_i)$ die korrespondierende Likelyhood Funktion am entsprechenden Ausgang $y_i$ des Kanals.
+Die Faktorgraphdarstellung dieses Szenarios ist in Figur (b) dargestellt.  
 
 \subsection{Bayssche Netwerke}
 
@@ -507,19 +559,19 @@ Schreibe statt einem Argument $x_i$ von $g$ ein $+$ um anzudeuten, dass über di
 \subsection{Funktionsweise des Algorithmus}
 
 Der Sum-product Algorithmus operiert mithilfe einer "message passing" Porzedur, die Produukte von lokalen 
-Funktionen entlangg der Pfade des Faktorgraphen aufsammelt. Es wird angenommen,dass dieser Graph ein Baum ist, d.h.
-dass dieser Graph keine Kreise enthält. Die Beschreibung des Algorithmus kann durch die Annahme, dass jeder Knoten wie ein
+Funktionen entlang der Pfade des Faktorgraphen aufsammelt. Es wird angenommen,dass dieser Graph ein Baum ist, d.h.
+dass dieser Graph keine Kreise enthält. Die Beschreibung des Algorithmus kann durch die Annahme vereinfacht werden, dass jeder Knoten wie ein
 Prozessor Nachrichten über Kanten übermittelt und empfängt. \\
 
 Für diese vereinfachte Betrachtung arbeitet der Algorithmus wie folgt. Die Basisoperation an jedem Knoten ermittlet
 das Produkt aller eingehenden Nachrichten an diesem Knoten. Für Knoten, die eine Menge von Variablen darstellen, wird dieses Produkt
 um die zugehörigen lokalen Funktionen erweitert. Die so ermittelten Produkte werden dann mit dem Vorbehalt, dass
-Nachrichten über ausgehnde Knoten keine Faktoren enthalten, über die ausgehenden Kanten übermittelt. Da vorrausgesetzt
+Nachrichten über ausgehende Knoten keine Faktoren enthalten, über die ausgehenden Kanten übermittelt. Da vorrausgesetzt
 wurde, dass der Faktorgraph keine Kreise enthält, enthält das Produkt der ausgehenden Nachrichten einer Kante und der empfangenen
 Nachrichten dieser Kante alle Faktoren der globalen Funktion. \\
 
 Diese sogenannte "message-passing" Prozedur wird von den Blättern des Faktorgraphs aus gestartet und iteriert über alle
-Knoten des Graphen. An Blättern, die Variablenmengen darstellen entspricht die ausgehende Nachricht eine Representation der lokalen 
+Knoten des Graphen. An Blättern, die Variablenmengen darstellen entspricht die ausgehende Nachricht einer Representation der lokalen 
 Funktion dieses Knotens. An Blättern, die eine Variable darstellen entspricht sie hingegen der Indikatorfunktion.
 Alle anderen Knoten des Graphen warten zunächst bis sie genügend Nachrichten gesammelt haben um eine ausgehende 
 Nachricht zu produzieren. Genauer soll das heißen, sie warten solange, bis an jeder bis auf einer eingehenden Kante Nachrichten
@@ -576,7 +628,7 @@ statistischen Modellen zu approximieren. \\
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Das Trueskill Verfahren}
+\section{Ein Ansatz mittels Faktorgraphen für das Trueskill Verfahren}
 Das Trueskill Verfahren ist ein Bayssches Ranking Verfahren, dass in seinen Grundzügen eine Erweiterung des
 Elo Ranking Systems aus dem Schach ist. 
 Dieses neue System beachtet Unsicherheiten in der Bewertung eines Spielers, stellt neue Modelle für ausgeglichene
@@ -584,6 +636,152 @@ Spiele auf und kann die Skills eines einzelnen Spielers aus dem Rang eines Teams
 Unsicherheiten werden durch eine Approximierung des message passing in faktorgraphen simuliert.  
 
 \subsection{Der Trueskill Faktorgraph}
+
+ Sei ${1,...,n}$ eine Menge von Spielern, die in $k$ Teams gegeneinander antreten. Die Zuweisung der Teams sei durch k disjunkte Teilmengen
+ $A_j \subset \{1,...,n\}$ mit $A_i \cap A_j = \emptyset \text{ für } i \neq j$ eindeutig beschrieben. Der Ausgang des Spiels sei definiert durch $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$,
+ wobei $r_j$ der Rang eines jeden Teams $j$ sei. Falls $r_j = 1$, so hat Team $j$ das Spiel gewonnen. Falls $r_i = r_j \text{ für } i \neq j$ so sagen wir, dass Team i gegen Team j
+ unentschieden gespielt hat. 
+ 
+ Wir wollen die Wahrscheinlichkeit $P(r|s,A)$ eines bestimmten Spielausganges $\mathbf{r}$ mit gegebenen Skills $\mathbf{s}$ der Spieler und einer Teamzuweisung $A := (A_1,...,A_k)$ modellieren. 
+ Mithilfe der Bayschen Regel erhalten wir für die Posterior Verteilung
+ 
+ \begin{equation}
+  p(\mathbf{s}|\mathbf{r},A) = \frac{P(\mathbf{r}|\mathbf{s},A)p(\mathbf{s})}{P(\mathbf{r}|A)}.
+ \end{equation}
+
+ Dabei nehmen wir an, dass $p(\mathbf{s}) := \prod_{i = 1}^n \mathcal{N}(s_i;\mu_i,\sigma_i^2)$. Dies macht Sinn, da der Faktorgraph selbst eine Menge von Multiplikationen darstellt, um
+ eine gemeinsame Verteilung zu finden. 
+ Wir weisen außerdem jedem Spieler in einem Spiel eine Performanz $p_i \sim \mathcal{N}(p_i; s_i,\beta^2)$ mit Zentrum $s_i$ und Varianz $\beta^2$ zu. Die Performanz $t_j$ eines Teams
+ $j$ entspricht der Summe $t_j := \sum_{i \in A_j} p_i$ der Spieler des Teams. 
+ 
+ Ordnen wir die Teams nach ihren Rängen im Spielausgang $\mathbf{r}$ und nehmen wir an, dass unentschieden zunächst nicht zugelassen sind, so erhalten wir
+ 
+ \begin{equation}
+  P(\mathbf{r}| \{t_1,...,t_k\}) = P(\mathbf{r}| \{t_r(1),...,t_r(k)\}).
+ \end{equation}
+
+ Sind unentschieden zugelassen, so erfordert der Spielausgang $r_(j) < r_(j+1)$ $t_r(1) > t_r(j+1) + \epsilon$ und ein unentschieden der Art $r_(j) = r_(j+1)$ umgekehrt 
+ $|t_r(1) - t_r(j+1)| \leq \epsilon$, wobei $\epsilon > 0$ ein Maß für die Gewinnspanne ist.
+ 
+ Wir wollen nun nach jedem Spiel die Skills der Spieler in Abhängigkeit des Spielausganges $\mathbf{r}$ auktualisieren und nutzen dafür die Darstellung mittels Faktorgraphen und
+ den daran gebundenen Expectation Propagation Algorithmus. 
+ Dazu approximieren wir die Posterior Verteilungen gaußverteilt und verwenden sie im darauf folgenden Spiel als Prior Verteilungen. 
+ 
+ Um das Verfahren an einem Beispielgraphen herleiten und erklären zu können, betrachten wir folgendes Spiel. 
+ Wir nehmen an, dass $k = 3$ Teams mit $A_1 = \{1\}, A_2 = \{2,3\} \text{ und } A_3 = \{4\}$ gegeneinander antreten. 
+ Der Spielausgang sei $\mathbf{r} = (1,2,2)$. Dies bedeutet, dass Team 1 das Spiel gewonnen hat und Team 2 und Team 3 unentschieden gespielt haben. 
+ In Figur () geben wir den korrespondierenden Trueskill Faktor Graphen an.
+ 
+ Wie bereits in Kapitel () beschrieben, ist die grundlegende Idee eine gemeinsame Wahrscheinlichkeitsverteilung von mehreren Zufallsvariablen 
+ in zwei verschiedene Typen von Knoten aufzuteilen. Schwarze Boxen stellen Faktorknoten und Kreise Variablenknoten dar. 
+ Die gemeinsame Verteilung ergibt sich dann als Produkt der einzelnen Faktoren: 
+ 
+ \begin{equation}
+  p(X) = \frac{1}{Z} \prod_S f_S(X_S)
+ \end{equation}
+ 
+ $X_S$ beschreibt die zu einem Faktor $f_S$ zugehörigen Variablen und $Z$ sei Normalisierungskonstante. 
+ Das wichtigste Konzept ist dann die Anwendung der Summen-Produkt-Update Regel: 
+ 
+ \textit{Jede Nachricht, die von einem Knoten v über eine Kante e übermittelt wird, entspricht dem Produkt der lokalen Funktion an v (Oder der Einheitsfunktion, falls v Variablenknoten
+ ist) mit allen eingegangenen Nachrichten an v außer an Kante e.}
+ 
+ In Anlehnung an Kapitel () ergeben sich damit die drei folgenden Gleichungen
+ 
+ \begin{equation}
+  p(v_k) = \prod_{f \in F_{v_k}}m_{f \rightarrow v_k}(v_k)
+ \end{equation}
+ 
+ Gleichung () sagt uns, dass der Wert des Marginales an $v_k$ dem Produkt der eingehenden Nachrichten entspricht. 
+ 
+ \begin{equation}
+  m_{f \rightarrow v_j}(v_j) = \int ... \int f(v) \prod_{i \neq j} m_{v_i \rightarrow f}(v_i) d \mathbf{v}_{\backslash j}
+ \end{equation}
+
+ Gleichung () zeigt, dass der Wert einer Nachricht von einem Faktor $f$ zu einer Variable $v_j$ der Summe über das Produkt aller anderen Nachrichten zwischen diesem Faktor
+ und abhängigen Variablen außer $v_j$ entspricht. 
+ 
+ \begin{equation}
+  m_{v_k \rightarrow f}(v_k) =  \prod_{f' \in F_{v_k}\backslash \{f\} }m_{f' \rightarrow v_k}(v_k)
+ \end{equation}
+
+ Gleichung () beschreibt, dass die Nachricht von einer Variable $v_k$ zu einem Faktor $f$ das Produkt aller anderen Nachrichten ist. 
+ 
+ Für weitere Details möchten wir auf Kapitel () und die dortigen Bespiele verweisen. 
+ 
+ \subsection{Prior Faktoren}
+ 
+ Betrachten wir die erste Ebene des Trueskill Graphen Prior Faktor ist im Trueskill Graphen als schwarze Box dargestellt. 
+ 
+ % Prior Bild
+ 
+ Um die Trueskill Update Formeln vereinfacht darstellen zu können, verwenden wir die folgenden Notationen
+ 
+ \begin{equation}
+  \begin{split}
+    \pi &= \sigma^{-2} = \frac{1}{\sigma^2} \\
+    \tau &= \pi \mu = \frac{\mu}{\sigma^2} \\
+   \end{split} 
+ \end{equation}
+ 
+ Das Ziel des Prior Faktors ist es diese Werte einer gaußverteilten Zufallsvariable mit Erwartung $m$ und Varianz $v\nu^2$ zu aktualisieren. 
+ Mit obiger Notation ergibt sich also:
+ 
+ \begin{equation}
+  \begin{split}
+    \pi_x^{\text{new}} &\leftarrow \pi_x + \frac{1}{\nu^2} \\
+    \tau_x^{\text{new}} &\leftarrow \tau_x + \frac{m}{\nu^2} \\
+  \end{split}
+ \end{equation}
+
+  Wir sehen, dass die beiden Gleichungen den ersten Gleichungen im Trueskill Paper () entsprechen. 
+  
+  \subsection{Unsicherheiten}
+  
+  Wie bereits in der Einleitung erwähnt können Skills nur mit einer gewissen Unsicherheit beschrieben werden. Wir beschreiben hier, wie solche Unsicherheiten im Trueskill Verfahren
+  berücksichtigt werden. 
+  Dazu nehmen wir an, dass wir eine gauqverteilte Zufallsvariable $y$ gegeben haben und eine neue gaußerverteilte Zufallsvariable $\mathcal{N}(x;y,c^2)$ erhalten wollen, die eine gewisse Unsicherheit
+  $c^2$ berücksichtigt.  
+  Dazu sei $a := (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1}$.
+  Durch Umformungen erhalten wir
+  \begin{equation}
+  \begin{split}
+   a &= (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1} = \frac{1}{1+c^2(\pi_y - \pi_{f \rightarrow y})} \\
+   &\approx \frac{\sigma_y^2}{\sigma_y^2 + c^2} \\
+  \end{split}
+  \end{equation}
+  
+  Es ist somit leicht zu sehen, dass a stets kleiner als 1 ist. Nun kann die Ungewissheit $c^2$ approximativ den Werten $\pi$ und $\tau$ zugewiesen werden: 
+  
+  \begin{equation}
+   \begin{split}
+      \pi_{f \rightarrow x}^{\text{new}} &\leftarrow a(\pi_y - \pi_{f \rightarrow y}) = \frac{1}{\sigma_y^2 + c^2} \\
+      \tau_{f \rightarrow x}^{\text{new}} &\leftarrow a(\tau_y - \tau_{f \rightarrow y}) = \frac{\mu_y}{\sigma_y^2 + c^2} \\
+   \end{split}
+  \end{equation}
+
+  \subsection{Teamperformanz}
+  Dieser Faktor wird benutzt um die Differezen zwischen Teams innerhalb eines Spieles auszudrücken und summiert mehrere gaußverteilte Variablen miteinander.
+  Wir nehmen an, dass wir n Variablen $v_1,...,v_n$ miteinander summieren wollen, wobei jede dieser Variablen mit einem Faktor $a_n$ gewichtet wird und $v_0$ dem Wert der
+  Summe entspricht. Es gilt also: 
+  
+  \begin{equation}
+   v_0 = a_1v_1 + ... + a_nv_n 
+  \end{equation}
+  
+  Aus Kapitel () über die Gaußverteilung wissen wir, dass dies einer Zufallsvariable mit Erwartungswert und Varianz der Form
+  
+  \begin{equation}
+   \begin{split}
+   \mu &= \sum_{i = 1}^n a_i \mu_i \\
+   \sigma^2 &= \sum_{i = 1}^n a_i^2\sigma_i^2 \\ 
+   \end{split}
+  \end{equation}
+  
+  entpricht. Da die Update Formeln durch den Gebrauch der oben eingeführten Notation mithilfe von $\pi$ und $\tau$ einfacher und kompakter zu implementieren sind, 
+  müssen diese in eine solche Form gebracht werden. 
+  
+
 
 \subsection{Aprroximieren des Message Passing}
 
