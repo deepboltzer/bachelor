@@ -114,10 +114,39 @@ Spiele zwischen Spielern mit ähnlichem Skill erzeugen. Zweitens ist es möglich
 Dirttens können Ratings als Qualifikationskriterium für Turniere verwendet werden. 
 Mit dem steigenden Interesse an Online Spielen in den Letzten Jahren, ist auch das Interesse an effektiven Rating Systemen für Modelle mit Millionen Spielern pro Tag 
 stark angestiegen.\\
-1959 entwickelte Arpad Elo ein statistisches Rating System für Schach Spieler, welches von der \textit{"World Chess Federation FIDE"} 1970 offiziell anerkannt wurde.
+1959 entwickelte Arpad Elo ein statistisches Rating System für Schach Spieler, welches von der \textit{World Chess Federation FIDE} 1970 offiziell anerkannt wurde.
 Die grundlegende Idee des \textit{Elo Rating Systems} ist es den möglichen Ausgang eines Spieles als Funktion der beiden Spieler Ratings $s_1$ und $s_2$ zu modellieren. 
-In jedem Spiel weißt ein Spieler eine gewisse \textit{Performanz} $p_i \sim \mathcal{N}(p_i;s_i,\beta^2)$. Es wird angenommen, dass diese \textit{Performanz} normalverteilt mit
+In jedem Spiel weißt ein Spieler eine gewisse \textit{Performanz} $p_i \sim \mathcal{N}(p_i;s_i,\beta^2)$ auf. Es wird angenommen, dass diese \textit{Performanz} normalverteilt um $s_i$ mit
+fester Varianz $\beta^2$ ist. Die Wahrscheinlichkeit, dass Spieler 1 gewinnt entspricht der Wahrscheinlichkeit, dass seine \textit{Performanz} $p_1$ größer ist, als die \textit{Performanz} $p_2$ 
+seines Gegners
 
+\begin{equation}
+ P(p_1 > p_2 | s_1. s_2) = \varPhi(\frac{s_1 - s_2}{\sqrt{2}\beta}).
+\end{equation}
+
+$\varPhi$ bezeichnet die kummulative Dichte der Gaußverteilung mit mit Nullerwartung und Einheitsvarianz.
+Nachdem das Spiel beendet ist werden die Skill Ratings der Spieler $s_1$ und $s_2$ so aktualisiert, dass der beobachtete Spielausgang wahrscheinlicher wird. 
+Sei $y = +1$, falls Spieler 1 gewinnt, $y = -1$, falls Spieler 2 gewinnt und $y = 0$, falls die beiden Spieler unentschieden spielen. 
+Das resultierende \textit{Elo Update} für beide Spieler hat dann die Form $s_1 \leftarrow s_1 + y \Delta$ und 
+
+\begin{equation}
+ \Delta = \alpha \beta \sqrt{\pi} (\frac{y+1}{2} \varPhi(\frac{s_1 - s_2}{\sqrt{2} \beta})).
+\end{equation}
+
+Viele moderne Ranking Systeme basieren in ihrer Idee auf dem hier kurz vorgestellten \textit{Elo Ranking System}.
+Mark Glickman zum Beispiel entwarf basierend auf dem \textit{Elo Ranking System} das sogenannte \textit{Glicko Rating System} um dem  Problem entgegen zu wirken, dass das \textit{Elo Ranking System} an die 20 Spiele
+benötigt um aussagekräftige Skill Ratings zu erzeugen. \\
+
+Eine wichtiges neues Anwendungsgebiet für Ranking Systeme sind Online Multiplayer Spiele. Aufgabe ist es unter anderem ausgeglichene, faire Spiele zwischen Spielern mit ähnlichem
+Skill zu erzeugen. Multiplayer Online Spiele stellen folgende neue Anforderungen an Ranking Systeme:
+
+\begin{enumerate}
+ \item Spielausgänge bestehen meist aus dem Ranking der Teams. Eine Herausforderung ist es, die Ranking Skills einzelner Spieler aus diesen Rankings zu erzeugen.
+ \item Es gibt Spiele bei denen mehr als zwei Teams oder Spielern gegeneinander antreten. Bei solchen Spielen gibt es nicht nur einen Gewinner und einen Verlierer. Viel mehr besteht der Spielausgang
+ hier aus einer Permutation von Teams oder Spielern. 
+\end{enumerate}
+
+In dieser Arbeit werden wir ein Verfahren analysieren, dass diese Anforderungen unterstützt.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
