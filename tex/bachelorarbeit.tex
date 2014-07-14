@@ -848,9 +848,83 @@ Unsicherheiten werden durch eine Approximierung des message passing in faktorgra
   entpricht. Da die Update Formeln durch den Gebrauch der oben eingeführten Notation mithilfe von $\pi$ und $\tau$ einfacher und kompakter zu implementieren sind, 
   müssen diese in eine solche Form gebracht werden. 
   
+\section{Hochdimensionale Integration}
 
+In diesem Kapitel stellen wir verschiedene Integrationstechniken zur Approximation Hochdimensionaler Integrale
 
-\subsection{Aprroximieren des Message Passing}
+\begin{equation}
+ \int_{\Omega} f(\mathbf{x}) d \mathbf{x} \approx \mathcal{Q}f = \sum_{i=1}^N \omega_i f(x_{(i)})
+\end{equation}
+
+vor. Wir bezeichnen $\Omega$ als das d-dimensionale Integrationsgebiet und $\mathbf{x_{(i)} \in \Omega$ als Stützstellen
+bzw. $\omega_i$ als Gewichte des Quadraturverfahrens $\mathcal{Q}$. Alle hier vorgestellten Quadraturverfahren 
+lassen sich als Spezialfälle dieser allgemeinen Darstellung auffassen und unterscheiden sich durch die jeweilige Wahl der
+Stützstellen und Gewichte. \\
+Wie auch bei anderen Approximationsverfahren interessieren wir uns für ein Maß der Approximationsgüte einzelner
+Verfahren. Deshalb werden wir in diesem Kapitel neben der Beschreibung auch auf die Konvergenzeigenschaften 
+der Verfahren eingehen. Für Monte Carlo Verfahren lässt sich bespielsweise eine dimensionsunabhängige Konvergenzrate
+zeigen, während die Konvergenzrate für die anderen Verfahren (Quasi-Monte Carlo und Dünne Gitter) stark von der effektiven
+Dimension des Problems abhängt. \\
+Als absoluten Fehler für die Approximationsgüte in unserer Analyse wählen wir 
+
+\begin{equation}
+ \epsilon(f) := |\mathcal{Q}f - \int_\Omega f(\mathbf{x}) d\mathbf{x}| .
+\end{equation}
+
+\subsection{Monte Carlo}
+
+Bei der Monte Carlo Integration wählen wir die Stützstellen $\mathcal{x_{(i)}}$ als Zufallszahlen einer d-dimensionalen
+Gleichverteilung und feste Gewichte $\omega_i = \frac{1}{N}$. 
+Das so entstandene Verfahren 
+
+ \begin{equation}
+ \int_{\Omega} f(\mathbf{x}) d \mathbf{x} \approx \frac{1}{N} \sum_{i = 1}^N f(x_{(i)}) \text{ mit } x_{(i)} \sim \mathcal{U_d}(\Omega)
+ \end{equation}
+
+ hat nach dem Gesetz der Großen Zahlen für beschränkte Varianzen eine Konvergenzrate von 
+ 
+ \begin{equation}
+  \epsilon(f) = \mathcal{O}(N^{-\frac{1}{2}}).
+ \end{equation}
+ 
+ Wir sehen schnell, dass der Nachteil dieses Verfahrens in seiner geringen Konvergenzrate für niedrige Dimensionen
+ liegt. Vorteile sind die geringen Vorraussetzungen an den Integranden und die Dimensionsunabhängigkeit der
+ Konvergenzrate. 
+ 
+ \subsection{Quasi-Monte Carlo}
+ 
+ Bei Quasi-Monte Carlo Verfahren verwenden wir statt Pseudo Zufallszahlen als Auswertungspunkte 
+ deterministische Punktfolgen so. Nieder-Diskrepanz-Folgen, die das Integrationsgebiet $\Omega$
+ überdecken. In dieser Arbeit haben wir Sobolev-, Niederreiter- und Ritchmeyer-Folgen () implementiert. 
+ Diese Änderung führt dazu, dass die Integrationspunkte gleichmäßiger auf dem Integrationsgebiet verteilt sind.
+ Dies wird in Abbildung () deutlich. 
+ 
+ Die verbesserten Verteilungseigenschaften liefern im geringen und mittleren Dimensionsbereich eine Verbesserung 
+ der Konvergenzrate auffassen
+ 
+ \begin{equation}
+  \mathcal{O}(\frac{\log(N)^d}{N}).
+ \end{equation}
+ 
+ \subsection{Produktansatz}
+ 
+ Der Produktansatz basiert auf eindimensionalen Quadraturverfahren. Ein eindimensionales Quadraturverfahren ist durch
+ \begin{equation}
+  \mathcal{Q}_l^{(1)}f := \sum_{i = 1}^{N_l} \omega_i f(x_{li}) 
+ \end{equation}
+ 
+ mit Diskretisierungslevel l definiert. \\
+ Durch Tensorierung von eindimensionalen numerischen Quadraturformeln können wir eine Quadraturformel 
+ für hochdimensionale Integrale konstruieren. 
+ Sei $l_i$ das Diskretisierungslevel der Quadraturformel in der i-ten Dimension und $N_{li}$ die zugehörige 
+ Anzahl von Stützstellen, so lässt sich das Tensorprodukt der Quadraturformeln durch 
+ 
+ \begin{equation}
+  \begin{split}
+  Q^{(d)}f &=(Q_{l_1}^{(1)} \otimes ... \otimes Q_{l_d}^{(1)})f \\
+  &= \sum_{i_1 = 1}^{N_{l_1}} ... \sum_{i_d = 1}^{N_{l_d}} \omega_{l_1} \cdot ... \omega_{l_d} \cdot f(x_{l_1 i_1},...,x_{l_d i_d}) \\
+  \end{split}
+ \end{equation}
 
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
