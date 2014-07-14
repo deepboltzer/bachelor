@@ -868,7 +868,7 @@ Dimension des Problems abhängt. \\
 Als absoluten Fehler für die Approximationsgüte in unserer Analyse wählen wir 
 
 \begin{equation}
- \epsilon(f) := |\mathcal{Q}f - \int_\Omega f(\mathbf{x}) d\mathbf{x}| .
+ \epsilon(f) := |Qf - \int_\Omega f(\mathbf{x}) d\mathbf{x}| .
 \end{equation}
 
 \subsection{Monte Carlo}
@@ -910,14 +910,14 @@ Das so entstandene Verfahren
  
  Der Produktansatz basiert auf eindimensionalen Quadraturverfahren. Ein eindimensionales Quadraturverfahren ist durch
  \begin{equation}
-  \mathcal{Q}_l^{(1)}f := \sum_{i = 1}^{N_l} \omega_i f(x_{li}) 
+  Q_l^{(1)}f := \sum_{i = 1}^{N_l} \omega_i f(x_{li}) 
  \end{equation}
  
  mit Diskretisierungslevel l definiert. \\
  Durch Tensorierung von eindimensionalen numerischen Quadraturformeln können wir eine Quadraturformel 
  für hochdimensionale Integrale konstruieren. 
  Sei $l_i$ das Diskretisierungslevel der Quadraturformel in der i-ten Dimension und $N_{li}$ die zugehörige 
- Anzahl von Stützstellen, so lässt sich das Tensorprodukt der Quadraturformeln durch 
+ Anzahl von Stützstellen, so lässt sich das Tensorprodukt der Quadraturformeln mit den $i_l$-ten Stützstellen und den $i_l$-ten Gewichten durch 
  
  \begin{equation}
   \begin{split}
@@ -925,10 +925,113 @@ Das so entstandene Verfahren
   &= \sum_{i_1 = 1}^{N_{l_1}} ... \sum_{i_d = 1}^{N_{l_d}} \omega_{l_1} \cdot ... \omega_{l_d} \cdot f(x_{l_1 i_1},...,x_{l_d i_d}) \\
   \end{split}
  \end{equation}
+ 
+ definieren. \\
+ 
+ Ein Nachteil dieses Ansatzes ist die exponentiell wachsende Anzahl von Auswertungspunkten (Fluch der Dimension):
+ Ein Quadraturverfahren mit der gleichen Diskretisierung in jede Richtung, also mit $N:= N_{l_1} = ... = N_{l_d}$-Auswertungspunkten,
+ benötigt in $d$ Dimensionen ingesamt $N^d$ Auswertungspunkte. \\
+ 
+ Wir erhalten als Konvergenzrate des Verfahrens
+ 
+ \begin{equation}
+  \epsilon(f) = \mathcal(O)(n^{-\frac{\alpha}{d}})
+ \end{equation}
+ 
+ Hierbei beschreibt $\alpha$ die Konvergenzrate des eindimensionalen Quadraturverfahrens.
+ Aufgrund der exponentiell von der Dimension $d$ abhängenden Konvergenzrate ist dieses Verfahren
+ für hohe Dimensionen unbrauchbar.
+ 
+ \subsection{Eindimensionale Quadraturverfahren}
+ 
+ Wir beschränken uns in dieser Arbeit zunächst auf die Clenshaw-Curtis Regel aus ().
+ Neben den Gauß-Quadraturformeln ist diese eine der bedeutensten eindimensionalen Quadraturregeln und
+ für die in Kapitel () auftretenden Integrale gut geeignet. 
+ 
+ \subsubsection{Clenshaw-Curtis}
+ 
+ Auch wenn die Clenshaw-Curtis Regel keinen optimalen Exaktheitsgrad hat, ist sie aufgrund ihrer
+ geschachtelten Struktur der Gewichte und Stützstellen für die Integrations mittels dünner Gitter 
+ sehr hilfreich. \\
+ Die Stützstellen und Gewichte der offenen Clenshaw-Curtis-Formeln ergeben sich als Extrempunkte der 
+ Chebycheff-Polynome auf $(0,1)$
+ 
+ \begin{equation}
+  \begin{split}
+      x_{l_i} &= \frac{1}{2}(1- \cos(\frac{\pi i}{N_l +1})) \\
+      w_{l_i} &= \frac{2}{N_l +1} \sin{(\frac{\pi i}{N_l +1})} \sum_{j = 1}^{\frac{(N_l + 1)}{2}} \frac{1}{2j -1} \sin{(\frac{(2j -1) \pi i}{N_l +1})}.
+    \end{split}
+ \end{equation}
 
+ Der Index $l$ gibt das Level und $N_l := 2^l -1$ die Anzahl der Stützstellen bzw. der Gewichte an.
+ 
+ \subsection{Dünne Gitter}
+ 
+ Ein Ansatz dem eben erwähnten Fluch der Dimension zu entgehen bieten die sogenannten Dünnen Gitter. 
+ Damit kann erreicht werden, dass die Konvergenzrate, ähnlich zu Quasi-Monte Carlo Techniken, nur
+ logarithmisch von der Dimension des Problems abhängt. \\
+ 
+ Wir wählen den Ansatz mittels Differenz von zwei Quadraturformeln unterschiedlicher Level. Sei eine 
+ Folge von Quadraturformeln mit $N_l^{(d)}$ Auswertungspunkten für ein Level $l \in \N$ mit 
+ $ N_l^{(d)} < N_{l+1}^{(d)}$ gegeben. \\ 
+ Wir definieren die Differenz zwischen zwei Leveln durch 
+ 
+ \begin{equation}
+ \begin{split}
+  \Delta_k^{(1)}f &= (Q_k^{(1)} - Q_{k-1}^{(1)})f \\ 
+  &= \sum_{i=1}^{N_k} \omega_{k,i} f(x_{k,i}) - \sum_{i=1}^{N_k} \omega_{k-1,i} f(x_{k-1,i}) \\
+  \text{ und } Q_0 f := 0.
+  \end{split}
+ \end{equation}
+
+
+  Mittels dieser Differenzen lässt sich die klassische Dünngitter-Quadratur nach Smolyak (siehe) mit $k \in \N^d$
+  als 
+  
+  \begin{equation}
+   Q_l^{(d)}f = \sum_{k_1 + ... + k_d \leq l+d-1} (\Delta_{k_1}^{(1)} \otimes ... \otimes \Delta_{k_d}^{(1)}) f
+  \end{equation}
+  
+  definieren. Anders als beim Produktansatz werden in der Dünngitter-Quadratur nur die Summanden betrachtet, 
+  deren Summe der Level echt kleiner als die vorgebene Konstante $l+d$ ist. 
+  
+  Für geschachtelte Quadraturformeln, wie die vorgestellte Clenshaw-Curtis-Regel, lässt sich die Teleskopsumme in ()
+  zu 
+  
+  \begin{equation}
+   \sum_{i=1}^{N_k} {\omega}_{k,i}f(x_{k,i}) \text{ mit } {\omega}_{k,i} 
+   =  \begin{cases} \omega_{k,i}&\text{falls i ungerade}\\ \omega_{k,i} - \omega_{k-1,\frac{i}{2}}&\text{falls i gerade }\end{cases}
+  \end{equation}
+  
+  vereinfachen. \\
+  
+  Zur Fehleranalyse dieses Verfahrens betrachten wir die Klasse $\mathcal{W}_d^r$ der Funktionen mit beschränkten
+  Ableitungen bis zur Ordnung $r$:
+  
+  \begin{equation}
+   \mathcal{W}_d^r := \{g: \Omega \rightarrow \R, ||\frac{\delta^{|s|}g}{\delta^{|s_1|} x_1,...,\delta^{|s_d|} x_d}||_{\infty} < \infty, s_i \leq r\}.
+  \end{equation}
+  
+  Erfüllt die eindimensionale Quadraturregel zusätzlich 
+  
+  \begin{equation}
+   \epsilon(f) = \mathcal{O}(n_l^{-r})
+  \end{equation}
+
+  und gilt $N_l = \mathcal{O}(2^l)$, dann ergibt sich für alle Funktionen $d \in \mathcal{W}_d^r$
+  die Fehlerabschätzung
+  
+  \begin{equation}
+   \epsilon(f) = \mathcal{O}(N_l^{-r}(\log N_l)^{(d-1)(r+1)})
+  \end{equation}
+
+  für die Integration mittels dünner Gitter. Der Unterschied der dünnen Gitter für die Clenshaw-Curtis-Regel
+  gegenüber dem Produktansatz ist anschaulich in Abbildung () zu erkennen.
+  
+  
+ 
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
-
 \begin{thebibliography}{Lam00}
  
 \end{thebibliography}
