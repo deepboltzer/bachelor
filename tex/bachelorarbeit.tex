@@ -1118,6 +1118,33 @@ Das so entstandene Verfahren
   \end{equation}
 
   vor. 
+  
+  Zum Schluss bringen wir die Terme $t_i$ in eine Reihenfolge und gliedern sie in den approximierten 
+  Posterior ein. Dies ist in Abbildung () anschaulich dargestellt. Wir starten mit $q(\Theta) - 1$. Den Prior 
+  Term einzugliedern ist dann trivial und benötigt keine Approximation. Um den nächsten Term $t_i(\Theta)$ einzugliedern, 
+  wählen wir den exakten Posterior
+  
+  \begin{equation}
+   P(\Theta) = \frac{t_i{\Theta}q{\Theta}}{\int_{\Theta}t_i(\Theta)q(\Theta)d \Theta}
+  \end{equation}
+   
+  und minimieren die KL-Divergenz $D(P(\Theta)||q^{new}(\Theta)) d \Theta$ unter der Annahme, dass
+  $q^{new}(\Theta)$ gaußverteilt ist. Die Nullbedingung an den Gradienten von $(\mathbf{m}_\Theta, \nu_{\Theta})$
+  erzwingt die Gleichungen
+  
+  \begin{equation}
+  \begin{split}
+   \mathbf{m}_{\Theta}^{new} &= \int_{\Theta} P(\Theta) \Theta d \Theta \\
+   \nu_{\Theta}^{new} d + (mathbf{m_\Theta}^{new})^T \mathbf{m_\Theta}^{new}) = \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
+  \end{split}
+  \end{equation}
+   
+  Oder als Erwartungswerte geschrieben 
+  
+  \begin{equation}
+   E_{q^{new}}[\Theta] = E_P[\Theta]
+   E_{q^{new}}[\Theta^T \Theta] = E_{P}[\Theta^T \Theta]
+  \end{equation}
 
   
   
