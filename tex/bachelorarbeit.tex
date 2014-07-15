@@ -867,6 +867,7 @@ zeigen, während die Konvergenzrate für die anderen Verfahren (Quasi-Monte Carl
 Dimension des Problems abhängt. \\
 Als absoluten Fehler für die Approximationsgüte in unserer Analyse wählen wir 
 
+ ,mnb              v
 \begin{equation}
  \epsilon(f) := |Qf - \int_\Omega f(\mathbf{x}) d\mathbf{x}| .
 \end{equation}
@@ -1028,8 +1029,99 @@ Das so entstandene Verfahren
   für die Integration mittels dünner Gitter. Der Unterschied der dünnen Gitter für die Clenshaw-Curtis-Regel
   gegenüber dem Produktansatz ist anschaulich in Abbildung () zu erkennen.
   
+  \section{Algorithmen in Baysschen Netzen}
   
- 
+  In diesem Kapitel betrachten wir Algorithmen zur Berechnung von Posterior Wahrscheinlichkeit in Baysschen Netzen.
+  Um Erwartungen und Posterior Wahrscheinlichkeiten zu bestimmen sind schnelle Methoden zur nunerischen Integration notwendig. 
+  In Kapitel () stellen wir bekannte Methoden, wie die von Genz () vor. Hier konzentrieren wir uns auf eine neue deterministische
+  Approximationsmethode, welche eine höhere Genauigkeit als viele der üblichen Verfahren (Monte-Carlo- und Quasi-Monte-Carlo-Verfahren) bei gleichbleibenden Kosten 
+  erreicht. \\
+  Wir gehen davon aus, dass wir eine Menge von Daten gegeben haben, aber an einer Unbekannten $x$ interessiert sind.
+  Schlussfolgerungen über diese Unbekannte $x$ können wir mittels der Posterior Wahrscheinlichkeit: 
+  
+  \begin{equation}
+   P(x|D) = \frac{P(x,D)}{P(D)} = \frac{P(x,D)}{\int_x P(x,D) dx}
+  \end{equation}
+  
+  ,wobei D die beobachtete Datenmenge bezeichnet. 
+  
+  Wie auch im Kapitel () über das Trueskill Verfahren deutlich wird, sind wir daran interessiert
+  die Posterior Erwartung und Varianz der Unbekannten zu bestimmen. Diese ergeben sich als Integrale 
+  über den Posterior: 
+  
+  \begin{equation}
+  \begin{split}
+   E[x|D] &= \int_x xP(x|D) dx = \frac{\int_x x P(x,D) dx}{\int_x P(x,D) dx } \\
+   E[x^2|D] &= \int_x x^2P(x|D) dx = \frac{\int_x x^2 P(x,D) dx}{\int_x P(x,D) dx } \\
+   Var[x|D] &= E[x^2|D] - E[x|D]^2 \\
+  \end{split}
+  \end{equation}
+  
+  Ist die Unbekannte, die uns interessiert nicht die einzige Unbekannte des Systems, so müssen weitere Unbekannte
+  aus der gemeinsamen Verteilung heraus marginalisiert werden. Das Problem erweitert sich dann um einige Integrale: 
+  
+  \begin{equation}
+   P(x|D) = \frac{\int_{y,z} P(x,y,z,D)}{\int_{x,y,z} P(x,y,z,D)}
+  \end{equation}
+
+  Wir unterscheiden bei klassischen numerischen Integrationsmethoden zwischen deterministischen und nichtdeterministischen Methoden. 
+  Deterministische Methoden versuchen den Integranden durch einen Ausdruck zu approximieren, dessen Integral
+  exakt berechnet werden kann. Nichtdeterministische Methoden werten den Integranden an Zufallspunkten aus, um
+  so den Wert des Integrals zu schätzen. Deshalb lassen sich Nichtdeterministische Methoden auf eine größere Klasse von Problemen 
+  anwenden. Sie brauchen jedoch mehr Rechenzeit als deterministische Methoden. \\
+  Die hier vorgestellte Methode, Expectation Propagation, ist eine deterministische Approximationsmethode. 
+  Sie ist eine Erweiterung des \textit{assumed-densitiy Filtering}-Verfahrens (Maybeck 1982).
+  In ADF werden Beobachtungen Schritt für Schritt betrachtet und der Posterior mittels Minimierung der KL-Divergenz approximiert.
+  Expectation Propagation (EP) erweitert das ADF Framework um einige zusätzliche Schritte, welche eine 
+  iterative Verfeinerung der Approximation bewirken. Dabei verfeinern Informationen von spätereren
+  Beobachtungen Approximationen, die früher gemacht wurden. Sobald die Verfeinerung konvergiert, sind der resultierende
+  Posterior unabhängig von der Reihenfolge der Beobachtungen.
+  Die Kosten dieses Verfahrens vergrößern sich dadurch nur um einen konstanten Faktor. 
+  
+  \subsection{ADF}
+  
+  Die Hauptidee der ADF Technik ist es, die KL-Divergenz zwischen exaktem Posterior und er Approximation zu minimieren.
+  \textit{Assumed-density Filtering (ADF)} ist eine grundlegende Technik um Posteriori in Bayschen Netzwerken
+  und anderen statistischen Modellen zu berechnen. \\
+  Sei $\Theta$ ein ein d-dimensionaler, gaußverteilter Vektor mit Verteilung 
+  \begin{equation}
+   P(\Theta) \sim \matcal{N}(0,100Id)
+  \end{equation}
+  
+  Die gemeinsame Verteilung von $\Theta$ und $n$ unabhängigen Beobachtungen $D = \{x_1,...,x_n\}$ ist dann: 
+  
+  \begin{equation}
+   P(D|\Theta) = P(\Theta) \prod_i P(x_i|\Theta).
+  \end{equation}
+  
+  Figur einfügen \\
+  
+  Zunächst schreiben wir die gemeinsame Verteilung $P(D, \Theta)$ als ein Produkt von Termen
+  $t_i$: 
+  
+  \begin{equation}
+   P(D, \Theta) = \prod_i t_i(\Theta).
+  \end{equation}
+  
+  Für klassiusche Bayssche Netzwerke, die auch im Trueskill Verfahren auftreten wählen wir eine 
+  Faktorisierung mittels bedingter Wahrscheinlichkeiten: $\prod_{nodes} P(Y|pa(Y))$, wobei $pa(Y)$
+  die Eltern von Knoten $Y$ im zugehörigen Graphen beschreibt. \\
+  Im zweiten Schritt wählen wir eine parametrische Approximationsverteilung. Dabei ist es von großer Bedeutung, 
+  dass dieser Verteilung der Familie der exponentiellen Verteilungen angehört, sodass nur eine feste Anzahl 
+  von Erwartungen berechnet werden muss. 
+  Normalerweise schränkt der Definitionsraum und die Eigenschaften von $\Theta$ diese Verteilung soweit ein, dass 
+  diese nahezu eindeutig bestimmt ist. 
+  Für Bayssche Netzwerke schlagen wir eine spherische Gaußverteilung der Form
+  
+  \begin{equation}
+   q(\Theta) \sim \matcal{N}(\matbf{m}_{\Theta})
+  \end{equation}
+
+  vor. 
+
+  
+  
+  
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
 \begin{thebibliography}{Lam00}
