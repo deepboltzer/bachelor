@@ -1085,7 +1085,7 @@ Das so entstandene Verfahren
   und anderen statistischen Modellen zu berechnen. \\
   Sei $\Theta$ ein ein d-dimensionaler, gaußverteilter Vektor mit Verteilung 
   \begin{equation}
-   P(\Theta) \sim \matcal{N}(0,100Id)
+   P(\Theta) \sim \mathcal{N}(0,100Id)
   \end{equation}
   
   Die gemeinsame Verteilung von $\Theta$ und $n$ unabhängigen Beobachtungen $D = \{x_1,...,x_n\}$ ist dann: 
@@ -1114,7 +1114,7 @@ Das so entstandene Verfahren
   Für Bayssche Netzwerke schlagen wir eine spherische Gaußverteilung der Form
   
   \begin{equation}
-   q(\Theta) \sim \matcal{N}(\matbf{m}_{\Theta})
+   q(\Theta) \sim \mathcal{N}(\mathbf{m}_{\Theta})
   \end{equation}
 
   vor. 
@@ -1135,7 +1135,7 @@ Das so entstandene Verfahren
   \begin{equation}
   \begin{split}
    \mathbf{m}_{\Theta}^{new} &= \int_{\Theta} P(\Theta) \Theta d \Theta \\
-   \nu_{\Theta}^{new} d + (mathbf{m_\Theta}^{new})^T \mathbf{m_\Theta}^{new}) = \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
+   \nu_{\Theta}^{new} d + (mathbf{m_\Theta}^{new})^T \mathbf{m_\Theta}^{new}) &= \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
   \end{split}
   \end{equation}
    
@@ -1146,7 +1146,20 @@ Das so entstandene Verfahren
    E_{q^{new}}[\Theta^T \Theta] = E_{P}[\Theta^T \Theta]
   \end{equation}
 
+  Um diese Erwartungen berechnen zu können sind die folgenden Beziehungen sehr hilfreich: 
   
+  \begin{equation}
+  \begin{split}
+   Z(\mathbf{m}_{\Theta} \nu_{\Theta}) &= \int_{\Theta} t(\Theta) q(\Theta) d \Theta \\ 
+   &= \int_{\Theta} \frac{t(\Theta)}{(2 \pi \nu_{\Theta})^{d/2}} exp(- \frac{1}{2 \nu_{\Theta}}(\Theta - \mathbf{m}_{\Theta})^T (\Theta - \mathbf{m}_{\Theta})) d \Theta \\
+   \nabla_m \log Z(\mathbf{m}_{\Theta}, \nu_{\Theta}) & = \frac{1}{Z} \int_{\Theta} \frac{(\Theta - \mathbf{m}_{\Theta})}{\nu_{\Theta}} \frac{t(\Theta)}{(2 \pi \nu_{\Theta})^{d/2}} exp(- \frac{1}{2 \nu_{\Theta}}(\Theta - \mathbf{m}_{\Theta})^T (\Theta - \mathbf{m}_{\Theta})) d \Theta \\
+   &= \frac{E_P[\Theta]}{\nu_{\Theta}} - \frac{\mathbf{m}_{\Theta}}{\nu_{\Theta}} \\
+   E_P[\Theta] &= \mathbf{m}_{\Theta} + \nu_{\Theta} \nabla_m \log Z(\mathbf{m}_{\Theta},\nu_{\Theta}) \\
+   E_P[\Theta^T \Theta] - E[\Theta]^TE[\Theta] &= \nu_{\Theta} d - \nu_{\Theta}^2 (\nabla_m^T \nabla_m - 2 \nabla_{\nu} \log Z(\mathbf{m}_{\Theta}, \nu_{\Theta}) ) \\ 
+  \end{split}
+  \end{equation}
+
+  Diese Gleichungen beschreiben Eigenschaften der Gaußverteilung und gelten für beliebige $t(\Theta)$
   
   
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
