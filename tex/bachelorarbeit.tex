@@ -867,7 +867,6 @@ zeigen, während die Konvergenzrate für die anderen Verfahren (Quasi-Monte Carl
 Dimension des Problems abhängt. \\
 Als absoluten Fehler für die Approximationsgüte in unserer Analyse wählen wir 
 
- ,mnb              v
 \begin{equation}
  \epsilon(f) := |Qf - \int_\Omega f(\mathbf{x}) d\mathbf{x}| .
 \end{equation}
@@ -1161,6 +1160,38 @@ Das so entstandene Verfahren
 
   Diese Gleichungen beschreiben Eigenschaften der Gaußverteilung und gelten für beliebige $t(\Theta)$
   
+  Der endgültige ADF Algorithmus ergibt sich dann als: 
+  
+  \begin{enumerate}
+   \item Initialisiere $\mathbf{m}_{\Theta} = 0, \nu_{\Theta} = 100 \text{ Prior }, s = 1 (\text{ Skalierungsfaktor })$
+   \item Für jeden Datenpunkt $mathbf{x_i}$, aktualisiere $(\mathbf{m_{\Theta}}, \nu_{\Theta},s)$ nach den Regeln
+   \begin{equation}
+    \begin{split}
+      \mathbf{m}_{\Theta}^{new} &= \mathbf{m}_{\Theta} + \nu_{\Theta} r_i \frac{\mathbf{x_i - m_{\nu}}}{\nu_{\Theta} + 1} \\
+      \nu_{\Theta}^{new} &= \nu_{\Theta} -  r_i (1 - r_i) \frac{(\mathbf{x_i - m_{\Theta}})^T (\mathbf{x_i - m_{\Theta}})}{d(v_{\nu} +1)^2} \\
+      s^{new} &= s x \mathbf{Z_i}(\mathbf{m_{\Theta}}, \nu_{\Theta}) \\
+    \end{split}
+   \end{equation}
+  \end{enumerate}
+
+  Für jeden Datenpunkt berechnen wir die Wahrscheinlichkeit, dass dieser nicht in Unordnung ist, machen
+  eine Aktualisierung unserer Vermutung an $\Theta$ $(\mathbf{m}_{\Theta})$ und ändern unsere Zuversicht an unsere
+  Schätzung $(\nu_{\Theta})$. \\
+  Wir sehen, dass der Algorithmus von der Reihenfolge der Betrachtung der Datenpunkte anhängt. Dies liegt daran, dass
+  die Wahrscheinlichkeit eines Datenpunktes in Unordung zu sein von der aktuellen Vermutung an $\Theta$ abhängt. 
+  Genauere Ergebnisse erhalten wir, wenn wir statt spherischen Gaußverteilungen, Gaußverteilungen mit voller
+  Kovarianzmatrix betrachten. In diesem Fall werden deutlich mehr Erwartungen vorberechnet, was die Genauigkeit 
+  dieses Verfahrens positiv beeinflusst. 
+  Abbildung () zeigt die Ausgabe des Algorithmus für drei verschiedene, zufällig gewählte Sortierungen 
+  der Datenpunkte. 
+  Wir sehen, dass der Fehler immer dann stark ansteigt, wenn gleiche Datenpunkte zusammen berechnet werden.
+  Außerdem erkenn wir, dass insebsondere das Verarbeiten der Daten in sortierter Reihenfolge schlecht ist. 
+  Dies liegt daran, dass der Algorithmus sich dann zu sehr auf eine Eingabe konzentriert, bevor er merkt, dass weitere
+  Input Daten verfügbar sind und diese somit vernachlässigt. Darunter leiden dann Offensichtlich die approximierten Werte
+  für die Erwartung und die Varianz. 
+  Eine Möglichkeit ist es, zuerst eine Ordnung der Daten zu finden, die die natürlichen Abweichungen in den Daten 
+  am besten wiederspiegelt. Eine andere Möglichkeit ist es die Abhängigkeiten von der Reihenfolge der Daten zu eliminieren. 
+  Diese Methode bschreiben wir im nächsten Kapitel. 
   
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
