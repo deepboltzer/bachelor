@@ -15,7 +15,7 @@
 % \usepackage[latin1]{inputenc} %  Alternativ unter Windows
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
-
+\usepackage[]{units}
 \usepackage{scrpage2}
 \usepackage[pdftex]{graphicx}
 \usepackage{latexsym}
@@ -1077,7 +1077,7 @@ Das so entstandene Verfahren
   Posterior unabhängig von der Reihenfolge der Beobachtungen.
   Die Kosten dieses Verfahrens vergrößern sich dadurch nur um einen konstanten Faktor. 
   
-  \subsection{ADF}
+  \subsection{ADF Methode}
   
   Die Hauptidee der ADF Technik ist es, die KL-Divergenz zwischen exaktem Posterior und er Approximation zu minimieren.
   \textit{Assumed-density Filtering (ADF)} ist eine grundlegende Technik um Posteriori in Bayschen Netzwerken
@@ -1134,7 +1134,7 @@ Das so entstandene Verfahren
   \begin{equation}
   \begin{split}
    \mathbf{m}_{\Theta}^{new} &= \int_{\Theta} P(\Theta) \Theta d \Theta \\
-   \nu_{\Theta}^{new} d + (mathbf{m_\Theta}^{new})^T \mathbf{m_\Theta}^{new}) &= \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
+   \nu_{\Theta}^{new} d + (\mathbf{m_\Theta}^{new}^T \mathbf{m_\Theta}^{new}) &= \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
   \end{split}
   \end{equation}
    
@@ -1164,7 +1164,7 @@ Das so entstandene Verfahren
   
   \begin{enumerate}
    \item Initialisiere $\mathbf{m}_{\Theta} = 0, \nu_{\Theta} = 100 \text{ Prior }, s = 1 (\text{ Skalierungsfaktor })$
-   \item Für jeden Datenpunkt $mathbf{x_i}$, aktualisiere $(\mathbf{m_{\Theta}}, \nu_{\Theta},s)$ nach den Regeln
+   \item Für jeden Datenpunkt $\mathbf{x_i}$, aktualisiere $(\mathbf{m_{\Theta}}, \nu_{\Theta},s)$ nach den Regeln
    \begin{equation}
     \begin{split}
       \mathbf{m}_{\Theta}^{new} &= \mathbf{m}_{\Theta} + \nu_{\Theta} r_i \frac{\mathbf{x_i - m_{\nu}}}{\nu_{\Theta} + 1} \\
@@ -1177,7 +1177,7 @@ Das so entstandene Verfahren
   Für jeden Datenpunkt berechnen wir die Wahrscheinlichkeit, dass dieser nicht in Unordnung ist, machen
   eine Aktualisierung unserer Vermutung an $\Theta$ $(\mathbf{m}_{\Theta})$ und ändern unsere Zuversicht an unsere
   Schätzung $(\nu_{\Theta})$. \\
-  Wir sehen, dass der Algorithmus von der Reihenfolge der Betrachtung der Datenpunkte anhängt. Dies liegt daran, dass
+  Wir sehen, dass der Algorithmus von der Reihenfolge der Betrachtung der Datenpunkte abhängt. Dies liegt daran, dass
   die Wahrscheinlichkeit eines Datenpunktes in Unordung zu sein von der aktuellen Vermutung an $\Theta$ abhängt. 
   Genauere Ergebnisse erhalten wir, wenn wir statt spherischen Gaußverteilungen, Gaußverteilungen mit voller
   Kovarianzmatrix betrachten. In diesem Fall werden deutlich mehr Erwartungen vorberechnet, was die Genauigkeit 
@@ -1193,6 +1193,56 @@ Das so entstandene Verfahren
   am besten wiederspiegelt. Eine andere Möglichkeit ist es die Abhängigkeiten von der Reihenfolge der Daten zu eliminieren. 
   Diese Methode bschreiben wir im nächsten Kapitel. 
   
+  \subsection{EP Methode}
+  
+  In diesem Abschnitt beschreiben wir den EP-Algorithmus und beschreiben sein Anwendung beispielhaft für 
+  das Clutter Problem. Der EP-Algorithmus basiert auf dem im vorherigen Abschnitt vorgestellten \textit{assumed-density filtering}-Verfahren.
+  Im ADF- Algorithmus behandeln wir jeden Term $t_i$ als exakt und approximieren dann den Posterior mittels $t_i$. 
+  Eine etwas andere Interpretation wäre erst $t_i$ durch einen Term $t_i'$ zu approximieren, um dann einen exakten
+  Posterior mit $t_i'$ weiter zu benutzen. Diese Interpretation ist ebenfalls zulässig, da wir $t_i'$ als Ratio des neuen 
+  Posterior durch 
+  
+  \begin{equation}
+   t'(\Theta) = Z \frac{q^{new}(\Theta)}{q(\Theta)}
+  \end{equation}
+  
+  definieren können. Multiplizieren wir diesen Term mit $q(\Theta)$, so erhalten wir wie gewünscht $q^{new}(\Theta)$.
+  Eine wichtige Eigenschaft ist es, dass der approximierte Posterior wiederum gaußverteilt ist. \\
+  Der Algorithmus des vorherigen Kapitel berechnet also nacheinander eine Gaußsch Approximation $t_i'(\Theta)$ für jeden 
+  Term $t_i(\Theta)$ und fügt diese Aprroximationen zu einem neuen gaußschen Posterior für $\Theta$ zusammen.
+  Unter dieser Betrachtungsweise haben die Approximationen keine zu beachtende Reihenfolge. Denn wir können jederzeit
+  einen Schritt zurückgehen und unsere früheren Approximationen verfeinern. Mit dieser Betrachtungsweise können wir den EP-Algorithmus
+  formulieren. \\
+  Aus dem vorherigen Abschnitt erhalten wir die folgende Approximation für einen Term: 
+  
+  \begin{equation}
+  \begin{split}
+   \mathbf{Z}(\mathbf{m_{\Theta}}, \nu_{\Theta}) &= \int_{\Theta} t_i(\Theta) q(\Theta) d \Theta \\
+   t_i'(\Theta) &= \mathbf{Z_i}(\mathbf{m_{\Theta}}, \nu_{\Theta}) \frac{q^{new}(\Theta)}{q(\Theta)} \\
+   &= \mathbf{Z_i}(\mathbf{m_{\Theta}}, \nu_{\Theta}) (\frac{\nu_{\Theta}}{\nu_{\Theta}^{new}})^{d/2} exp(-\frac{1}{\nu_{\Theta}^{new}} (\Theta - \mathbf{m}_{\Theta}^{new})^T (\Theta - \mathbf{m}_{\Theta}^{new}))\\
+   &exp( \frac{1}{2 \nu_{\Theta}} (\Theta - \mathbf{m}_{\Theta}^{new})^T (\Theta - \mathbf{m}_{\Theta}^{new})) \\
+   \end{split}
+  \end{equation}
+
+  Wir definieren nun $(\mathbf{m}_i, \nu_i)$ durch:
+  
+  \begin{equation}
+  \begin{split}
+   \nu_i^{-1} &= (\nu_{\Theta}^{new})^{-1} - \nu_{\Theta}^{-1} \\
+   \mathbf{m}_i &= \nu_i(\nu_{\Theta}^{new})^{-1} \mathbf{m}_{\Theta}^{new} - \nu_i \nu_{\Theta}^{-1} \mathbf{m}_{\Theta} \\
+   &= \mathbf{m}_{\Theta} + (\nu_i - \nu_{\Theta}) \nu_{\Theta}^{-1}(\mathbf{m}_{\Theta}^{new} - \mathbf{m}_{\Theta}). \\
+  \end{split}
+  \end{equation}
+
+  Damit erhalten wir für die Terme $t_i'(\Theta)$ die einfachere Form: 
+  
+  \begin{equation}
+   t_i'(\Theta) = \frac{\mathbf{Z}_i(\mathbf{m}_{\Theta}, \nu_{\Theta})}{\mathcal{N}(\mathbf{m}_i; \mathbf{m}_{\Theta}, (\nu_i + \nu_{\Theta})^T)} \mathcal{N}(\Theta; \mathbf{m}_i, \nu_i^T).
+  \end{equation}
+
+  Nach Konstruktion erhalten wir das ADF Update mit Skalierungsfaktor $\mathbf{Z}_i$, wenn wir diesen Ausdruck mit 
+  $q(\Theta)$ multiplizieren. \\
+  Figu
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
 \begin{thebibliography}{Lam00}
