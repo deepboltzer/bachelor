@@ -1537,7 +1537,31 @@ Das so entstandene Verfahren
    Die Leistung $t(\mathbf{i})$ eines Teams mit Indexmenge $\mathbf{i}$ der Spieler sei lineare Funktion der Leistungen der individuellen Spieler, $t(\mathbf{i}) = \mathbf{b(i)^T x}$.
    Sei eine Stichprobe der Leistungen $\mathbf{x} \in \R^n$ gegeben, so sei das Ranking so definiert, dass das Team mit der größten Leistung auf Rang 1 steht und das Team mit der
    schlechtesten Leistung an letzter Stelle steht. Sollten zwei Teams, bis auf einen minimalen Unterschied $\epsilon$, die gleiche Leistung erbracht haben so nennen wir dies ein Unentschieden.
+   Nachdem wir die Leistungen der Spieler nach ihren Werten neugeordnet haben betrachten wir stets nur die paarweise Differenz, um zu entscheiden, ob das Team mit größerer Leistung
+   gewinnt, oder ein Unentschieden vorliegt. \\
    
+   Um dieses Modell mathematisch zu formulieren, definieren wir einen $k-1$-dimensionalen Vektor aus Hilfsvariablen $\mathbf{z}$, wobei $z_j := t(\mathbf{i}_j) - t(\mathbf{i}_{j+1}) = \mathbf{a}_j^T \mathbf{x}$
+   
+   \begin{equation}
+    \mathbf{z} := \mathbf{A}^T \mathbf{x} = [a_1 ... a_{k-1}] \mathbf{x}.
+   \end{equation}
+   
+   Da $\mathbf{x} \sim \mathcal{N}(\mathbf{x};\mathbf{s}, \beta^2 \mathbf{I})$ gaußverteilt ist, wissen wir das $\mathbf{z}$ ebenfalls gaußverteilt ist mit
+   $\mathbf{z} \sim \mathcal{N}(\mathbf{z}; \mathbf{A}^T \mathbf{s}, \beta^2 \mathbf{A} \mathbf{A}^T) $.
+   Damit können wir die Wahrscheinlichkeit eines Rankings $r$ mittels der gemeinsamen Verteilung über $\mathbf{z}$ beschreiben, 
+   
+   \begin{equation}
+    P(\mathbf{y}| \mathbf{s_i}_1,...,\mathbf{s_i}_k) = \prod_{j = 1}^{k-1} (P(z_j > \epsilon))^{y_i}(P(|z_j| \leq \epsilon))^{1 - y_j}.
+   \end{equation}
+   
+   In Kapitel () beschreiben wir Methoden, wie solche Wahrscheinlichkeiten numerisch berechnet werden können. 
+
+   \section{Vorhersage Algorithmus}
+   
+   In dieser Phase sind wir daran interessiert, die Wahrscheinlichkeit eines bestimmten Spielausganges $\mathbf{r}$ vorherzusagen, falls die Skills $\mathbf{\mu}$ und die
+   Standardabweichungen $\mathbf{\sigma}$ der Spieler bekannt sind. Dazu müssen wir $P(\mathbf{y})$ aus $P(\mathbf{y}|s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k)$ wo alle Ungewissheiten
+   über die Skills $s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k$ ausmarginalisiert werden. Der Algorithmus ergibt sich leicht aus den in Kapitel () und () vorgestellten Methoden.
+
 
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
