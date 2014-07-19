@@ -116,8 +116,8 @@ Mit dem steigenden Interesse an Online Spielen in den Letzten Jahren, ist auch d
 stark angestiegen.\\
 1959 entwickelte Arpad Elo ein statistisches Rating System für Schach Spieler, welches von der \textit{World Chess Federation FIDE} 1970 offiziell anerkannt wurde.
 Die grundlegende Idee des \textit{Elo Rating Systems} ist es den möglichen Ausgang eines Spieles als Funktion der beiden Spieler Ratings $s_1$ und $s_2$ zu modellieren. 
-In jedem Spiel weißt ein Spieler eine gewisse \textit{Performanz} $p_i \sim \mathcal{N}(p_i;s_i,\beta^2)$ auf. Es wird angenommen, dass diese \textit{Performanz} normalverteilt um $s_i$ mit
-fester Varianz $\beta^2$ ist. Die Wahrscheinlichkeit, dass Spieler 1 gewinnt entspricht der Wahrscheinlichkeit, dass seine \textit{Performanz} $p_1$ größer ist, als die \textit{Performanz} $p_2$ 
+In jedem Spiel weißt ein Spieler eine gewisse \textit{Leistungen} $p_i \sim \mathcal{N}(p_i;s_i,\beta^2)$ auf. Es wird angenommen, dass diese \textit{Leistungen} normalverteilt um $s_i$ mit
+fester Varianz $\beta^2$ ist. Die Wahrscheinlichkeit, dass Spieler 1 gewinnt entspricht der Wahrscheinlichkeit, dass seine \textit{Leistungen} $p_1$ größer ist, als die \textit{Leistungen} $p_2$ 
 seines Gegners
 
 \begin{equation}
@@ -718,7 +718,7 @@ Unsicherheiten werden durch eine Approximierung des message passing in faktorgra
 
  Dabei nehmen wir an, dass $p(\mathbf{s}) := \prod_{i = 1}^n \mathcal{N}(s_i;\mu_i,\sigma_i^2)$. Dies macht Sinn, da der Faktorgraph selbst eine Menge von Multiplikationen darstellt, um
  eine gemeinsame Verteilung zu finden. 
- Wir weisen außerdem jedem Spieler in einem Spiel eine Performanz $p_i \sim \mathcal{N}(p_i; s_i,\beta^2)$ mit Zentrum $s_i$ und Varianz $\beta^2$ zu. Die Performanz $t_j$ eines Teams
+ Wir weisen außerdem jedem Spieler in einem Spiel eine Leistungen $p_i \sim \mathcal{N}(p_i; s_i,\beta^2)$ mit Zentrum $s_i$ und Varianz $\beta^2$ zu. Die Leistungen $t_j$ eines Teams
  $j$ entspricht der Summe $t_j := \sum_{i \in A_j} p_i$ der Spieler des Teams. 
  
  Ordnen wir die Teams nach ihren Rängen im Spielausgang $\mathbf{r}$ und nehmen wir an, dass unentschieden zunächst nicht zugelassen sind, so erhalten wir
@@ -1242,7 +1242,303 @@ Das so entstandene Verfahren
 
   Nach Konstruktion erhalten wir das ADF Update mit Skalierungsfaktor $\mathbf{Z}_i$, wenn wir diesen Ausdruck mit 
   $q(\Theta)$ multiplizieren. \\
-  Figu
+  Abbildung () illustriert $t_i(\Theta)$ und $t_i'(\Theta)$ für das Clutter Problem. \\
+  
+  Bis hierhin haben wir nur die ADF Aktualisierungen in einer anderen Art und Weise formuliert. 
+  Um den EP Algorithmus zu erhalten verfeinern wir alle Termvariablen $(\mathbf{m}_i, \nu_i)$ basierend auf allen anderen Approximationen. 
+  Der allgemeine EP Algorithmus lautet: 
+  
+  \begin{enumerate}
+   \item Initialisiere die Term Approximationen $t_i'$
+   \item Berechne den Posterior für $\Theta$ mithilfe des Produktes vom $t_i'$:
+   \begin{equation}
+    q^{new}(\Theta) = \frac{\prod_i t_i'(\Theta)}{\int \prod_i t_i'(\Theta) d \Theta}
+   \end{equation}
+   \item Bis alle $t_i'$ konvergieren: 
+   \begin{enumerate}
+    \item Wähle ein $t_i'$.
+    \item Entferne $t_i'$ aus dem Posterior, um einen früheren Posterior $q(\Theta)$ zu erhalten
+    \begin{equation}
+     q(\Theta) \propto \frac{q^{new}(\Theta)}{t_i'(\Theta)}
+    \end{equation}
+    \item Berechne den Posterior $q^{new}(\Theta)$ und den Normalisierungsfaktor $Z_i$ aus $q(\Theta)$ 
+    und $t_i(\Theta)$ mittels ADF.
+    \item Setze 
+    \begin{equation}
+     t_i' = Z_i \frac{q^{new}(\Theta)}{q(\Theta)}
+    \end{equation}
+   \end{enumerate}
+   \item Nutze die Normalisierungskonstante von $q^{new}(\Theta)$ (aus 1.) als eine Approximation für $P(D)$
+   \begin{equation}
+    P(D) \approx \int \prod_i t_i'(\Theta) d \Theta
+   \end{equation}
+  \end{enumerate}
+
+  Sobald das Verfahren konvergiert ist das Ergebnis unabhängig von der Reihenfolge der Betrachtung der Terme $t_i$.
+  In der Beschreibung des Algorithmus haben wir die Division verwendet um $t_i'$ aus dem Posterior zu entfernen. 
+  Wir können stattdessen aber auch alle Terme außer $t_i'$ multiplizieren 
+  
+  \begin{equation}
+   q(\Theta) \propto \prod_(j \neq i) t_j'(\Theta).
+  \end{equation}
+  
+  \subsection{Anwendung auf das Clutter Problem}
+  
+ \section{Trainingingsmethoden}
+ 
+ In diesem Kapitel beschreiben wir eine Methode, wie der Expectation Algorithmus mit der \textit{Bayes-Point-Machine}
+ verknüpft werden kann. Die \textit{Bayes-Point-Machine} ist eine Bayssche Spezifikation der \textit{Support-Vector-Machine (SVM)}. 
+ Die \textit{Bayes-Point-Machine} approximiert den Baysschen Durchschnitt mithilfe des sogenannten \textit{Bayes Punktes}.
+ Diesen \textit{Bayes Punkt} zu finden, ist eine einfachere, aber immernoch sehr komplizierte Aufgabe. 
+ \\
+ Wir zeigen hier, dass Expectation Propagation mit für einen durch eine Kovarianzmatrix beschriebenen, gaußverteilten
+ Posterior eine vollständige Approximation des Bayschen Durchschittes erzeugt. 
+ 
+ \subsection{Die \textit{Bayes-Point-Machine} }
+ 
+ Die \textit{Bayes-Point-Machine (BPM)} ist eine Bayssche Erweiterung von linearen Klassifizierern. 
+ Ein linearer Klassifizierer, klassifiziert einen Punkt $\mathbf{x}$ mittels eines Vektors $mathbf{w}$
+ nach $y = sign(\mathbf{w}^T \mathbf{x})$. Sei eine Trainingsmenge $D = \{(\mathbf{x_1}, y_1),...,(\mathbf{x_n}, y_n)\}$ gegeben, so 
+ können wir den Likelyhood für $\mathbf{w}$ schreiben als: 
+ 
+ \begin{equation}
+  P(D|\mathbf{w}) = \prod_i P(y_i| \mathbf{x_i} \mathbf{w}) = \prod_i \Theta(y_i \mathbf{w}^T \mathbf{x_i}) \\
+  \Theta(z) = \begin{cases}1&\text{falls }z > 0\\1&\text{falls }z \leq 0\end{cases} 
+ \end{equation}
+ 
+ Wir möchten hier anmerken, dass $P(D|\mathbf{w})$ nur Verteilung von $y$ ist, und nicht von $\mathbf{x}$.
+ Dieser Likelyhood ist 1, falls $\mathbf{w}$ perfekter Separierer ist und 0 sonst. Lineare Separation kann
+ leicht durch stufenweise Vergrößerung der Menge an Eigenschaften erzielt werden. 
+ Zum Beispiel in dem man dem urpsrünglichen Raum Quadrate hinzufügt, bis die Daten in dem so neu erzeugten Raum
+ separabel sind. Wir erzeugen so einen nichlinearen Entscheidungsrand im urprünglichen Raum. 
+ Eine solche Vergrößerung der Menge an Eigenschaften kann leicht mittels des sogenannten \textit{Kernel tricks} 
+ effizient implementiert werden. Dabei schreiben wir den Algorithmus mithilfe von inneren Produkten um, und 
+ erreichen somit eine Vergrößerung der Menge an Eigenschaften mittels dieser inneren Produkte. 
+ Diese Methode wollen wir in einem späteren Abschnitt beschreiben. 
+ Weitere Verfeinerungen der Methode können in (Minka 2001...) nachgelesen werden. Minka deutet zum Beispiel an, wie Unsicherheiten
+ in den Trainingsdaten berücksichtigt werden können. \\
+ 
+ Um unser Bayssches Modell zu vervollständigen müssen wir den Prior auf $\mathbf{w}$ spezifizieren. 
+ Auch hier möchten wir für Details auf Minka ... verweisen. 
+ Wir wählen für $\mathbf{w}$ eine spärische Gaußverteilung
+ 
+ \begin{equation}
+  P(\mathbf{w}) \sim \mathcal{N}(\mathbf{0,I}).
+ \end{equation}
+
+ Damit folgt aus den Eigenschaften der spärischen Gaußverteilung, dass $\mathbf{w}$ unabhängig vom Radius $r$
+ gleichverteilt auf der Kugel vom Radius r ist. Dieser Prior ist somit unabhängig vom Entscheidungsrand.
+ \\
+ In diesem Modell lässt sich ein neuer Datenpunkt $\mathbf{x}$, dann durch 
+ 
+ \begin{equation}
+  P(y|\mathbf{x},D) = \int_{\mathbf{w}} P(y|\mathbf{x,w}) P(\mathbf{w}|D) d \mathbf{w}
+ \end{equation}
+ 
+ klassifizieren. Wir sehen, dass somit in jedem Schritt ein Integral gelöst werden muss. 
+ Eine Möglichkeit ist es nun, einen einzelnen Punkt $\mathbf{w}$ zu bestimmen, der die Verteilung für $y$
+ am besten approximiert. Dieser Punkt wird \textit{Bayes Point} genannt. 
+ Wie vorhin angedeutet ist dieser Punkt jedoch schwer zu finden. Wir wollen der Methode von Rujan (1997)
+ folgen und die Poserior Erwartung $E[\mathbf{w}|D]$ für $\mathbf{w}$ benutzen. Im Folgenden nennen wir 
+ dies den \textit{Bayes Point}. Unsere Strategie ist es eine Gaußapproximation für den Posterior zu machen und dann
+ dessen Erwartung als \textit{Bayes Point} zu benutzen. 
+ 
+ \subsection{Training via ADF}
+ 
+ Auch hier starten wir mit dem ADF Updates. Um den ADF mit der \textit{Baye-Point-Machine} zu verknüpfen
+ teilen wir die gemeinsame Verteilung von $P(D,\mathbf{w})$ in $n$ Terme. Dies entspricht einem Term für jeden
+ Datenpunkt. Da $y$ und $\mathbf{x}$ stets verknüpft auftreten gehen wir in den folgenden Formeln davon aus, dass 
+ $\mathbf{x_i}$ schon durch $y_i$ skaliert wurde. Wir nehmen an, dass der approximierte Posterior von der Form
+ 
+ \begin{equation}
+  q(\mathbf{w}) \sim \mathcal{N}(\mathbf{m}_w, \mathbf{V}_w)
+ \end{equation}
+
+ ist. Durch minimieren der KL-Divergenz erhalten wir die Beziehungen 
+ 
+ \begin{equation}
+ \begin{split}
+  E_{q^{new}}[\mathbf{w}] &= E_{P'}[\mathbf{w}] \\
+  E_{q^{new}}[\mathbf{w} \mathbf{w}^T] &= E_{P'}[\mathbf{w} \mathbf{w}^T] \\
+ \end{split}
+ \end{equation}
+
+ Um diese Erwartungen berechnen zu können nutzen wir die folgenden Beziehungen, die wir du partielle Integration
+ erhalten: 
+ 
+ \begin{equation}
+  \begin{split}
+  Z(\mathbf{m}_w, \mathbf{V}_w) &= \int_w t(\mathbf{w}) q(\mathbf{w}) d \mathbf{w} \\
+  E_{p'}[\mathbf{w}] &= \mathbf{m}_w \mathbf{V}_w \nabla_m \log Z(\mathbf{m_w}, \mathbf{V}_w) \\
+  E_{P'}[\mathbf{w} \mathbf{w}^T] &= \mathbf{V}_w - \mathbf{V}_w (\nabla_m \nabla_m^T - 2 \nabla_v \log Z(\mathbf{m}_w, \mathbf{V}_w)) \mathbf{V}_w
+  \end{split}
+ \end{equation}
+
+ Diese Beziehungen gelten für jedes $t(\mathbf{w})$. Für die \textit{Bayes-Point-Machine} erhalten wir indem wir 
+ $y \mathbf{x}$ zu $\mathbf{x}$ kombinieren:
+ 
+ \begin{equation}
+  \begin{split}
+  t(\mathbf{w}) &= \epsilon + (1 - 2 \epsilon) \Theta (\mathbf{w}^T \mathbf{x}) \\
+  \phi(z) &= \int_{- \infty}^z \mathcal{N}(z;0,1) dz \\
+  z &= \frac{\mathbf{m}_w^T \mathbf{x}}{\sqrt{\mathbf{x}^T \mathbf{V}_w \mathbf{x}}} \\
+  Z(\mathbf{m}_w, \mathbf{V}_w) &= \epsilon + (1 - 2 \epsilon) \phi(z) \\
+  \alpha &= \frac{1}{ \sqrt{ \mathbf{x}^T \mathbf{V}_w \mathbf{x} } } \frac{ (1 - 2 \epsilon) \mathcal{N}(z;0,1) }{ \epsilon + (1-2 \epsilon) \phi(z) } \\
+  \nabla_m log Z(\mathbf{m}_w \mathbf{V}_w) &= \alpha \mathbf{x} \\
+  \nabla_v log Z(\mathbf{m}_w \mathbf{V}_w) &= -\frac{1}{2} \frac{ \alpha \mathbf{m}_w^T \mathbf{x} }{\mathbf{x}^T \mathbf{V}_w \mathbf{x}} \mathbf{xx^T} \\
+  \nabla_m \nabla_m^T - 2 \nabla_v \log Z(\mathbf{m}_w, \mathbf{V}_w) &= \alpha^2 \mathbf{x} \mathbf{x}^T + \frac{\alpha \mathbf{m}_w^T \mathbf{x}}{ \mathbf{x}^T \mathbf{V}_w \mathbf{x}} \mathbf{x x^T}
+  \end{split}
+ \end{equation}
+  
+  Damit ergibt sich für den ADF Algorithmus: 
+  
+  \begin{enumerate}
+   \item Initialisiere $\mathbf{m}_w = 0, \mathbf{V}_w = \mathbf{1}$ (Prior). Initialisiere $s = 1$ (Skalierungsfaktor).
+   \item Für jeden Datenpunkt $\mathbf{x}_i$ aktualisiere $(\mathbf{m}_w, \mathbf{V}_w), s$ mittels:
+   \begin{equation}
+    \begin{split}
+      \mathbf{m}_w^{new} &= \mathbf{m}_w + \mathbf{V}_w \alpha_i \mathbf{x}_i \\
+      \mathbf{V}_w^{new} &= \mathbf{V}_w - (\mathbf{V}_w \mathbf{x}_i) (\frac{ \alpha_i \mathbf{x}_i \mathbf{m}_w^{new}}{ \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i }) (\mathbf{V}_w \mathbf{x}_i)^T \\
+      \mathbf{s}^{new} &= s \times Z_i(\mathbf{m}_w, \mathbf{V}_w) \\
+    \end{split}
+   \end{equation}
+  \end{enumerate}
+   Nach Ausführung des Algorithmus ist $\mathbf{m}_w$ die Schätzung von $\mathbf{w}$, die zur Klassifizierung genutzt wird. Wir 
+   möchten bemerken, dass dieser Algorithmus keine Matrixinvertierung benötigt, was erhebliche Rechenvorteile zur Foge hat.
+
+  \subsection{Training via EP}
+  
+  In diesem Abschnitt modifizieren wir den ADF Algorithmus aus dem vorherigen Kapitel zu einem EP Algorithmus. 
+  Durch das dividieren zwei konsekutiv gaußverteilter Posteriori, erhalten wir eine durch $\mathbf{m}_i$ und $\mathbf{V}_i$ parametrisierte,
+  gaußverteilte Termapproximation: 
+  
+  \begin{equation}
+  \begin{split}
+   t'(\mathbf{w}) &= Z \frac{q^{new}(\mathbf{w})}{q(\mathbf{w})} \\ 
+   &= \frac{Z}{\mathcal{N}(\mathbf{m}_i;\mathbf{m}_w;\mathbf{V}_i + \mathbf{V}_w)} \mathcal{N}(\mathbf{w}; \mathbf{m}_i,\mathbf{V}_i) \\
+   \text{wobei } \mathbf{V}_i^{-1} &= (\mathbf{V}_w^{new})^{-1} - \mathbf{V}_w^{-1} \\ 
+   \mathbf{m}_i &= \mathbf{V}_i (\mathbf{m}_w^{new})^{-1} \mathbf{m}_w^{new} - \mathbf{V}_i \mathbf{V}_w^{-1} \mathbf{m}_w \\
+   &= \mathbf{m}_w + (\mathbf{V}_i \mathbf{V}_w) \mathbf{V}_w^{-1}(\mathbf{m}_w^{new} - \mathbf{m}_w) \\
+  \end{split}
+  \end{equation}
+  
+  Um den Ausdruck zu vereinfachen, kombinieren wir ihn mit den Gleichungen aus dem vorherigen Kapitel. Damit
+  erhalten wir $(\mathbf{m}_i, \mathbf{V}_i)$ direkt aus $(\mathbf{m}_w, \mathbf{V}_w)$ : 
+  
+  \begin{equation}
+  \begin{split}
+   \mathbf{V}_i &= (\frac{ \alpha_i \mathbf{x}_i^T \mathbf{m}_w^{new} }{ \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i } \mathbf{x}_i^T)^{-1} - \mathbf{V}_w \\
+   \mathbf{m}_i &= \mathbf{m}_w + (\mathbf{V}_i + \mathbf{V}_w) \alpha_i \mathbf{x}_i 
+   \end{split}  
+  \end{equation}
+
+  Die Eigenwerte der Matrix $(\frac{ \alpha_i \mathbf{x}_i^T \mathbf{m}_w^{new} }{ \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i } \mathbf{x}_i^T)$ sind alle ungleich Null. 
+  D.h., dass $\mathbf{V}_i$ einen endlichen Eigenwert in Richtung von $\mathbf{x}_i$ hat. 
+  Dies macht Sinn, denn Term $i$ beschränkt nur die Projektion von $\mathbf{w}$ einlang von $\mathbf{x}_i$. 
+  Diese spezielle Struktur erlaubt es uns $\mathbf{V}_i$ mithilfe eines Skalares $v_i$ darzustellen: 
+  
+  \begin{equation}
+   \begin{split}
+   \mathbf{V}_i^{-1} &= v_i \mathbf{x}_i \mathbf{x}_i^T \\
+   \mathbf{x}_i^T \mathbf{V}_i \mathbf{x}_i &= v_i \\
+  \end{split}
+  \end{equation}
+  
+  Aus der Darstellung von $\mathbf{V}_i$, wissen wir 
+  
+  \begin{equation}
+   \mathbf{x}_i^T \mathbf{V}_i \mathbf{x}_i =  \frac{\mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i}{\alpha_i \mathbf{x}_i^T \mathbf{m}_w^{new}} - \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i
+  \end{equation}
+
+  was bedeutet, dass sich die Aktualiserung von $v_i$ als 
+  
+  \begin{equation}
+   v_i = \mathbf{x}_i \mathbf{V}_w \mathbf{x}_i ( \frac{ 1 }{ \alpha_i \mathbf{x}_i^T \mathbf{m}_w^{new} } - 1 ) 
+  \end{equation}
+  
+  ergibt. Eine weitere Konsequenz aus der speziellen Struktur ist, dass wir statt des vollständigen Vektors
+  $\mathbf{m}_i$, nur die Projektion $\mathbf{m}_i^T \mathbf{x}_i$ benötigen. Auch diese kann in einem Skalar $m_i$ 
+  gespeichert werden.
+  
+  Wir sind nun in der Lage einen effizienten EP Algorithmus zu formulieren: 
+  
+  \begin{enumerate}
+   \item Außer für den Prior setzte die Termapproximationen auf
+   \begin{equation}
+    t_i'(\mathbf{w}) = s_i exp(- \frac{1}{2 v_i}(\mathbf{w}^T \mathbf{x}_i - m_i)^2)
+   \end{equation}
+   Initialisiere $v_i = \infty m _i = 0 s_i = 1$.
+   \item Setzte $\mathbf{m}_w^{new} = 0, \mathbf{V}_w^{new} = \mathbf{I}$ (Prior).
+   \item Bis alle $(m_i,v_i,s_i)$ konvergieren: \\
+   Für $i = 1,...,n:$
+   \begin{enumerate}
+    \item Entferne $t_i'$ aus dem Posterior um einen früheren Posterior zu erhalten: 
+    \begin{equation}
+    \begin{split}
+     \mathbf{V}_w &= ( (\mathbf{V}_w^{new})^{-1} - v_i^{-1} \mathbf{x}_i \mathbf{x}_i^T )^{-1} \\
+     &= \mathbf{V}_w^{new} + (\mathbf{V}_w^{new} \mathbf{x}_i) ( v_i - \mathbf{x}_i^T \mathbf{V}_w^{new}\mathbf{x}_i )^{-1} (\mathbf{V}_w^{new} \mathbf{x}_i)^T \\
+     \mathbf{m}_w &= \mathbf{m}_w^{new} + \mathbf{V}_w \mathbf{V}_i^{-1} (\mathbf{m}_w^{new} \mathbf{m}_i) \\
+     &= \mathbf{m}_w^{new} + (\mathbf{V}_w \mathbf{x}_i) v_i^{-1} (\mathbf{x}_i^T \mathbf{m}_w^{new} - m_i) \\
+     \end{split}
+    \end{equation}
+    Diese Ausdrücke können mithilfe von $\mathbf{V}_w$ effizient durch
+    
+    \begin{equation}
+    \begin{split}
+     \mathbf{V}_w \mathbf{x}_i &= ( \mathbf{V}_w^{new} \mathbf{x}_i ) \frac{ v_i }{ v_i - \mathbf{x}_i \mathbf{V}_w^{new} \mathbf{x}_i } \\
+     \mathbf{x}_i \mathbf{V}_w \mathbf{x}_i &= (\frac{1}{\mathbf{x}_i \mathbf{V}_w^{new} \mathbf{x}_i} - \frac{1}{v_i})^{-1} \\
+     \end{split}
+    \end{equation}
+    \item Berechne mittels ADF $(\mathbf{m}_w^{new}, \mathbf{V}_w^{new}, Z_i)$ aus $(\mathbf{m}_w, \mathbf{V}_w)$ neu.
+    \item Aktualisiere $t_i'$: 
+    \begin{equation}
+     \begin{split}
+      v_i &= \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i ( \frac{1}{\alpha_i \mathbf{x}_i^T \mathbf{m}_w^{new}} -1 )  \\
+      m_i &= \mathbf{x}_i^T \mathbf{m}_w + (v_i + \mathbf{x}_i^{T} \mathbf{V}_w \mathbf{x}_i) \alpha_i \\
+      s_i &= Z_i \frac{|\mathbf{V}_i + \mathbf{V}_w|^{1/2}}{|\mathbf{V}_i|^{1/2}} exp(\frac{1}{2}(\mathbf{m}_i \mathbf{m}_w)^T) (\mathbf{V}_i + \mathbf{V}_w)^{-1} (\mathbf{m}_i - \mathbf{m}_w^))\\
+      &= Z_i \sqrt{1 + v_i^{-1} \mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i} exp(\frac{1}{2} \frac{\mathbf{x}_i^T \mathbf{V}_w \mathbf{x}_i}{\mathbf{x}_i^T \mathbf{m}_w^{new}} \alpha_i)\\
+      \end{split}
+    \end{equation}
+   \end{enumerate}
+   \item Berechne die Normalisierungskonstante: 
+   \begin{equation}
+    \begin{split}
+      B &= (\mathbf{m}_w^{new})^T (\mathbf{V}_w^{new})^{-1} (\mathbf{m}_w^{new}) - \sum_i \frac{m_i^2}{v_i} \\
+      P(D) &\approx |\mathbf{V}_w^{new}|^{1/2} exp(B/2) \prod_{i = 1}^ s_i \\
+     \end{split}
+   \end{equation}
+  \end{enumerate}
+
+  Dieser Algorithmus verarbeitet jeden Datenpunkt in $\mathcal{O}(d^2)$. Unter der Annahme, dass die Anzahl 
+  an Iterationen konstant ist benötigt das finden des \textit{Bayes-Point} mit diesem Algorithmus
+   $\mathcal{O}(nd^2)$. Das Berechnen der Normalisierungskonstante am Ende braucht  $\mathcal{O}(d^3)$ Zeit. 
+
+   \section{Grober Rahmen}
+   
+   \subsection{Multiple Team Games Algorithms}
+   
+   In diesem Abschnitt beschreiben wir die Funktionsweise von Update Algorithmen für Spiele, in denen mehrere 
+   Teams gegeineinander antreten. 
+   Wir nehmen an, dass in einem Spiel $k$ Teams gegeinander antreten, wobei in Team $j$ $n_j$ mit Indizes $\mathbf{i}_j$ Spieler zusammen
+   spielen. Wir gehen außerdem davon aus, dass wir den Spielausgang in Form eines Ranking Vektors
+   $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$ vorliegen. Dies erlaubt es uns die Teams in der Reiheinfolge
+   $ r_{(1)} \leq r_{(2)} \leq ... \leq r_{(k)}$ neu zu ordnen. Dabei bezeichnet $( \cdot )$ eine Permutation 
+   der Indizes von $1,...,k$ bezeichnet, welche die Ordung der Rankings der Team in der gewünschten Reihenfolge
+   erzeugt. Somit ist es möglich den Spielausgang $\mathbf{r}$ mittels Permutation von Teamindizes und einem Vektor 
+   $\mathbf{y} \in \{0, +1\}^{k-1}$ zu schreiben. $\mathbf{y}$ beschreibt dabei, wie Team $j$ und Team $j+1$ gegeneinander
+   gespielt haben. Falls  Team $j$ gegen Team $j+1$ gewonnen hat gelte $(y_j = +1)$, bei einem Unentschieden gelte 
+   $(y_j = 0)$, d.h $y_j = sign(r_{(j+1)} - r_{(j)})$.
+   
+   \subsection{Das Modell}
+   
+   Unsere Grundannahme ist es, dass jeder Spielausgang auf den Leistungen der teilnehmenden Spielern aufbaut. Die 
+   Leistung $x_i$ eines Spielers sei dabei gaußverteilt, sodass der Skill des Spielers $i$, $s_i$ der Erwartung der Gaußverteilung entspricht. 
+   Wir nehmen außerdem an, dass die Varianz der Leistung einzelner Spieler der Konstante $\beta^2$ entspricht. Damit folgt $x_i \sim \mathcal{N}(x_i; s_i, \beta^2)$.
+   Die Leistung $t(\mathbf{i})$ eines Teams mit Indexmenge $\mathbf{i}$ der Spieler sei lineare Funktion der Leistungen der individuellen Spieler, $t(\mathbf{i}) = \mathbf{b(i)^T x}$.
+   Sei eine Stichprobe der Leistungen $\mathbf{x} \in \R^n$ gegeben, so sei das Ranking so definiert, dass das Team mit der größten Leistung auf Rang 1 steht und das Team mit der
+   schlechtesten Leistung an letzter Stelle steht. Sollten zwei Teams, bis auf einen minimalen Unterschied $\epsilon$, die gleiche Leistung erbracht haben so nennen wir dies ein Unentschieden.
+   
+
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
   \newpage
 \begin{thebibliography}{Lam00}
