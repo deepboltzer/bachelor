@@ -22,6 +22,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{latexsym}
 \usepackage{amssymb}
+\usepackage[]{algorithm2e}
 
 
 % Abstand obere Blattkante zur Kopfzeile ist 2.54cm - 15mm
@@ -124,7 +125,7 @@ seines Gegners
  P(p_1 > p_2 | s_1. s_2) = \varPhi(\frac{s_1 - s_2}{\sqrt{2}\beta}).
 \end{equation}
 
-$\varPhi$ bezeichnet die kummulative Dichte der Gaußverteilung mit mit Nullerwartung und Einheitsvarianz.
+$\varPhi$ bezeichnet die kumulative Dichte der Gaußverteilung mit Nullerwartung und Einheitsvarianz.
 Nachdem das Spiel beendet ist werden die Skill Ratings der Spieler $s_1$ und $s_2$ so aktualisiert, dass der beobachtete Spielausgang wahrscheinlicher wird. 
 Sei $y = +1$, falls Spieler 1 gewinnt, $y = -1$, falls Spieler 2 gewinnt und $y = 0$, falls die beiden Spieler unentschieden spielen. 
 Das resultierende \textit{Elo Update} für beide Spieler hat dann die Form $s_1 \leftarrow s_1 + y \Delta$ und 
@@ -147,10 +148,13 @@ Skill zu erzeugen. Multiplayer Online Spiele stellen folgende neue Anforderungen
 \end{enumerate}
 
 In dieser Arbeit werden wir ein Verfahren analysieren, dass diese Anforderungen unterstützt.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Das Ranking Problem}
+\section{Das Trueskill Verfahren}
+
+\subsection{Das Ranking Problem}
 
 Wir betrachten im Folgenden Spiele, bei denen Spieler in zwei oder mehr Teams gegeneinander antreten. Sind nur zwei Spieler vorhanden, so betrachten wir die beiden Spieler als zwei Teams
 die gegeneinander antreten. Falls zwei Spieler oder Teams dieselbe Bewertung erhalten, sagen wir das das Spiel unentschieden ausgegangen ist. 
@@ -171,9 +175,9 @@ Falls ein Team $u$ vor einem Team $v$ platziert wurde, so ist es wahrscheinliche
 
 \end{Definition}
 
-\section{Bayssche Methodik}
+\subsection{Bayssche Methodik}
 
-Offensichtlich kennen wir den Skill eines Spielers nie mit absoluter Sicherheit. Deshalb basieren das Trueskill, sowie viele andere bekannte Verfahren auf Baysschen Modellen. Dazu beschreiben wir den Skill eines
+Offensichtlich kennen wir den Skill eines Spielers nie mit absoluter Sicherheit. Deshalb basieren das \textit{Trueskill}, sowie viele andere bekannte Verfahren auf Baysschen Modellen. Dazu beschreiben wir den Skill eines
 Spielers durch eine Wahrscheinlichkeitsverteilung $P(\textbf{s})$. Wir nehmen außerdem an, dass diese Verteilung einer multivariaten Gaußverteilung entspricht, deren Kovarianzmatrix
 Diagonalmatrix mit Einträgen $\sigma_i^2$ ($P(\mathbf{s}) = \mathcal{N}(\mathbf{s},\mathbb{\mu},\mathbf{diag(\sigma^2)})$ ). Diese Annahme hat einige Vorteile: 
 \begin{enumerate}
@@ -210,7 +214,7 @@ werden wieder schlechter.
 \\
 Wir sind deshalb an einem \textit{Posterior} $P(s_i| \vartriangle t)$, welcher impliziert, dass ein Spieler mit Index $i$ eine Zeit lang $\vartriangle t$ nicht gespielt hat.
 Dazu benötigen wir ein Maß $P(\vartriangle \mu | \vartriangle t)$ für die Änderung des Skills $\vartriangle \mu$ des Spielers in der Zeit $\vartriangle t$.
-Wir folgen dem Trueskill Modell nach Herbrich (Literatur) und nehmen an, dass der Skill eines Spielers in dieser Zeit steigt oder fällt und das Ausmaß der Änderung durch eine Funktion $\tau$ in
+Wir folgen dem \textit{Trueskill} Modell nach Herbrich (Literatur) und nehmen an, dass der Skill eines Spielers in dieser Zeit steigt oder fällt und das Ausmaß der Änderung durch eine Funktion $\tau$ in
 Abhängigkeit von $\vartriangle t$ beschrieben wird.
 Damit erhalten wir $P(\vartriangle \mu | \vartriangle t) = \mathcal{N}(\vartriangle \mu; 0;\tau^2(\vartriangle t))$.
 Übertragen wir dieses Modell auf die Skills $s_i$ der einzelnen Spieler so erhalten wir: 
@@ -225,303 +229,353 @@ Damit erhalten wir $P(\vartriangle \mu | \vartriangle t) = \mathcal{N}(\vartrian
 \end{equation}
 
 Wir werden in dieser Arbeit $\tau$ als konstant $\tau_0$ annehmen.
-\section{Wahrscheinlichkeitstheorie}
-Dieses Kapitel gibt einen Überblick über einige wichtige Konzepte der Wahrscheinlichkeitstheorie.
-Im Folgenden werden Mengen mit Großbuchstaben, z.B. $X$, und deren Elemente mit Kleinbuchstaben, z.B $x$,
-bezeichnet. Für Mengen definiere die Indikatorfunktion $I_{X}$ durch 
-$$
-I_{X}(x) := \begin{cases}0&\text{falls }x\notin X\\1&\text{falls }x \in X\end{cases}
-$$
 
-\begin{Definition}\textbf{($\sigma$-Algebra)}
- Sei eine Menge $\chi$ gegeben. Ein Mengensystem $\varUpsilon$ von Mengen $X \subseteq \chi$ wird 
- genau dann $\sigma$-Algebra über $\chi$ genannt, wenn 
- \begin{enumerate}
-  \item Ist eine Menge X $\in$ $\varUpsilon$ enthalten, so auch ihr Komplement $X^{c} = \chi \backslash X$.
-  \item Falls $X_{i} \in \varUpsilon,$ $i=1,...,\infty$ abzählbares Mengensystem in $\varUpsilon$
-  ,dann sind auch $\cup_{i=1}^{\infty}X_{i} \in \varUpsilon$ und $\cap_{i=1}^{\infty}X_{i} \in \varUpsilon$ in 
-  $\varUpsilon$ enthalten.
- \end{enumerate}
 
-\end{Definition}
+\subsection{Der \textit{Trueskill} Faktorgraph}
+ 
+Das \textit{Trueskill} Verfahren ist ein Bayssches Ranking Verfahren, dass in seinen Grundzügen eine Erweiterung des
+Elo Ranking Systems aus dem Schach ist. 
+Dieses neue System beachtet Unsicherheiten in der Bewertung eines Spielers, stellt neue Modelle für ausgeglichene
+Spiele auf und kann die Skills eines einzelnen Spielers aus dem Rang eines Teams ermitteln. 
+Unsicherheiten werden durch eine Approximierung des message passing in faktorgraphen simuliert.  
+\\
+ Sei ${1,...,n}$ eine Menge von Spielern, die in $k$ Teams gegeneinander antreten. Die Zuweisung der Teams sei durch k disjunkte Teilmengen
+ $A_j \subset \{1,...,n\}$ mit $A_i \cap A_j = \emptyset \text{ für } i \neq j$ eindeutig beschrieben. Der Ausgang des Spiels sei definiert durch $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$,
+ wobei $r_j$ der Rang eines jeden Teams $j$ sei. Falls $r_j = 1$, so hat Team $j$ das Spiel gewonnen. Falls $r_i = r_j \text{ für } i \neq j$ so sagen wir, dass Team i gegen Team j
+ unentschieden gespielt hat. 
+ 
+ Wir wollen die Wahrscheinlichkeit $P(r|s,A)$ eines bestimmten Spielausganges $\mathbf{r}$ mit gegebenen Skills $\mathbf{s}$ der Spieler und einer Teamzuweisung $A := (A_1,...,A_k)$ modellieren. 
+ Mithilfe der Bayschen Regel erhalten wir für die Posterior Verteilung
+ 
+ \begin{equation}
+  p(\mathbf{s}|\mathbf{r},A) = \frac{P(\mathbf{r}|\mathbf{s},A)p(\mathbf{s})}{P(\mathbf{r}|A)}.
+ \end{equation}
 
-Kurz, jede $\sigma$-Algebra ist abgeschlossen unter Komplementbildung und abzählbaren Vereinigungen oder
-Schnitten. 
+ Dabei nehmen wir an, dass $p(\mathbf{s}) := \prod_{i = 1}^n \mathcal{N}(s_i;\mu_i,\sigma_i^2)$. Dies macht Sinn, da der Faktorgraph selbst eine Menge von Multiplikationen darstellt, um
+ eine gemeinsame Verteilung zu finden. 
+ Wir weisen außerdem jedem Spieler in einem Spiel eine Leistungen $p_i \sim \mathcal{N}(p_i; s_i,\beta^2)$ mit Zentrum $s_i$ und Varianz $\beta^2$ zu. Die Leistungen $t_j$ eines Teams
+ $j$ entspricht der Summe $t_j := \sum_{i \in A_j} p_i$ der Spieler des Teams. 
+ 
+ Ordnen wir die Teams nach ihren Rängen im Spielausgang $\mathbf{r}$ und nehmen wir an, dass unentschieden zunächst nicht zugelassen sind, so erhalten wir
+ 
+ \begin{equation}
+  P(\mathbf{r}| \{t_1,...,t_k\}) = P(\mathbf{r}| \{t_r(1),...,t_r(k)\}).
+ \end{equation}
 
-\begin{Definition}\textbf{(Borelmengen)}
- Sei $\chi = \R^{n}$, die Borelmengen $B_{n}$ sind die kleinsten $\sigma$-Algebren, die alle 
- offenen Intervalle 
- $$
- \textit{\{}(x_{1},...,x_{n})\in \R^{n} | \forall i \in \textit{\{}1,...,n\textit{\}}: x_{i} \in (a_{i},b_{i})\textit{\}}
- $$
- für alle $a_{i},b_{i} \in \R$. Bemerke, dass $B_{n}$ überabzählbar ist. 
-\end{Definition}
+ Sind unentschieden zugelassen, so erfordert der Spielausgang $r_(j) < r_(j+1)$ $t_r(1) > t_r(j+1) + \epsilon$ und ein unentschieden der Art $r_(j) = r_(j+1)$ umgekehrt 
+ $|t_r(1) - t_r(j+1)| \leq \epsilon$, wobei $\epsilon > 0$ ein Maß für die Gewinnspanne ist.
+ 
+ Wir wollen nun nach jedem Spiel die Skills der Spieler in Abhängigkeit des Spielausganges $\mathbf{r}$ auktualisieren und nutzen dafür die Darstellung mittels Faktorgraphen und
+ den daran gebundenen Expectation Propagation Algorithmus. 
+ Dazu approximieren wir die Posterior Verteilungen gaußverteilt und verwenden sie im darauf folgenden Spiel als Prior Verteilungen. 
+ 
+ Um das Verfahren an einem Beispielgraphen herleiten und erklären zu können, betrachten wir folgendes Spiel. 
+ Wir nehmen an, dass $k = 3$ Teams mit $A_1 = \{1\}, A_2 = \{2,3\} \text{ und } A_3 = \{4\}$ gegeneinander antreten. 
+ Der Spielausgang sei $\mathbf{r} = (1,2,2)$. Dies bedeutet, dass Team 1 das Spiel gewonnen hat und Team 2 und Team 3 unentschieden gespielt haben. 
+ In Figur () geben wir den korrespondierenden \textit{Trueskill} Faktor Graphen an.
+ 
+ Wie bereits in Kapitel () beschrieben, ist die grundlegende Idee eine gemeinsame Wahrscheinlichkeitsverteilung von mehreren Zufallsvariablen 
+ in zwei verschiedene Typen von Knoten aufzuteilen. Schwarze Boxen stellen Faktorknoten und Kreise Variablenknoten dar. 
+ Die gemeinsame Verteilung ergibt sich dann als Produkt der einzelnen Faktoren: 
+ 
+ \begin{equation}
+  p(X) = \frac{1}{Z} \prod_S f_S(X_S)
+ \end{equation}
+ 
+ $X_S$ beschreibt die zu einem Faktor $f_S$ zugehörigen Variablen und $Z$ sei Normalisierungskonstante. 
+ Das wichtigste Konzept ist dann die Anwendung der Summen-Produkt-Update Regel: 
+ 
+ \textit{Jede Nachricht, die von einem Knoten v über eine Kante e übermittelt wird, entspricht dem Produkt der lokalen Funktion an v (Oder der Einheitsfunktion, falls v Variablenknoten
+ ist) mit allen eingegangenen Nachrichten an v außer an Kante e.}
+ 
+ In Anlehnung an Kapitel () ergeben sich damit die drei folgenden Gleichungen
+ 
+ \begin{equation}
+  p(v_k) = \prod_{f \in F_{v_k}}m_{f \rightarrow v_k}(v_k)
+ \end{equation}
+ 
+ Gleichung () sagt uns, dass der Wert des Marginales an $v_k$ dem Produkt der eingehenden Nachrichten entspricht. 
+ 
+ \begin{equation}
+  m_{f \rightarrow v_j}(v_j) = \int ... \int f(v) \prod_{i \neq j} m_{v_i \rightarrow f}(v_i) d \mathbf{v}_{\backslash j}
+ \end{equation}
 
-\begin{Definition}\textbf{(Maß- und Wahrscheinlichkeitsraum)}
- Ein messbarer Raum ist ein Tupel $(\chi,\varUpsilon)$. Dabei ist $\chi$ das Universum und 
- $\varUpsilon$ $\sigma$-Algebra über $\chi$. Ein Wahrscheinlichkeitsraum ist ein Tripel $(\chi,\varUpsilon,P)$,
- wobei $P$ ein Wahrscheinlichkeitsmaß auf $\chi$ ist. D.h. $P: \varUpsilon \rightarrow [0,1]$, sodass
- $P(\chi) = 1$ und für disjunkte abzählbare Vereinigungen $X_{i} \in \varUpsilon$, $i= 1,...\infty$ gilt
- $$
- P(\cup_{i=1}^{\infty}X_{i}) = \sum_{i=1}^{\infty}P(X_{i}).
- $$
- \end{Definition}
+ Gleichung () zeigt, dass der Wert einer Nachricht von einem Faktor $f$ zu einer Variable $v_j$ der Summe über das Produkt aller anderen Nachrichten zwischen diesem Faktor
+ und abhängigen Variablen außer $v_j$ entspricht. 
+ 
+ \begin{equation}
+  m_{v_k \rightarrow f}(v_k) =  \prod_{f' \in F_{v_k}\backslash \{f\} }m_{f' \rightarrow v_k}(v_k)
+ \end{equation}
 
-\begin{Definition}\textbf{(Messbarkeit)}
- Sei $(\chi,\varUpsilon)$ messbarer Raum. Eine reellwertige Funktion $g: \chi \rightarrow \R$
- heisst $\varUpsilon$-messbar (oder messbar) genau dann, wenn 
- $$
- \forall z \in \R: \textit{\{} x \in X | g(x) \leq z \textit{\}} \in \varUpsilon.
- $$
- \end{Definition}
+ Gleichung () beschreibt, dass die Nachricht von einer Variable $v_k$ zu einem Faktor $f$ das Produkt aller anderen Nachrichten ist. 
+ 
+ Für weitere Details möchten wir auf Kapitel () und die dortigen Bespiele verweisen. 
+ 
+ \subsubsection{Prior Faktoren}
+ 
+ Betrachten wir die erste Ebene des \textit{Trueskill} Graphen Prior Faktor ist im \textit{Trueskill} Graphen als schwarze Box dargestellt. 
+ 
+ % Prior Bild
+ 
+ Um die \textit{Trueskill} Update Formeln vereinfacht darstellen zu können, verwenden wir die folgenden Notationen
+ 
+ \begin{equation}
+  \begin{split}
+    \pi &= \sigma^{-2} = \frac{1}{\sigma^2} \\
+    \tau &= \pi \mu = \frac{\mu}{\sigma^2} \\
+   \end{split} 
+ \end{equation}
+ 
+ Das Ziel des Prior Faktors ist es diese Werte einer gaußverteilten Zufallsvariable mit Erwartung $m$ und Varianz $v\nu^2$ zu aktualisieren. 
+ Mit obiger Notation ergibt sich also:
+ 
+ \begin{equation}
+  \begin{split}
+    \pi_x^{\text{new}} &\leftarrow \pi_x + \frac{1}{\nu^2} \\
+    \tau_x^{\text{new}} &\leftarrow \tau_x + \frac{m}{\nu^2} \\
+  \end{split}
+ \end{equation}
 
-\begin{Definition}\textbf{(Zufallsvariable)}
-Sei $(\chi,\varUpsilon)$ messbarer Raum. Eine Zufallsvariable ist eine $\chi$-messbare reellwertige
-Funktion $f: \chi \rightarrow \R$.
-\end{Definition}
-
-Eine Zufallsvariable $Y = f(X)$ induziert also ein Maß $P_{Y}$ auf $\R$, für das die 
-$\sigma$-Algebra $A$ die Intervalle der Form {$(-\infty,z)|z \in \R$} enthält. Das Maß 
-$P_{Y}$ ist vom Maß $P_{X}$ und $f$ indzuiert. Das bedeutet
-
-$$
-\forall Y \in B_{1}: P_{Y}(Y) := P_{X}(\textit{\{} x \in X | f(x) \in Y \textit{\}}).
-$$
-
-\begin{Definition}\textbf{(Verteilungsfunktion und Dichte)}
-Für eine Zufallsvariable X heißt die durch 
-$$
-F_{X}(x) := P_{X}(X \leq x)
-$$
-definierte Funktion $F_{X}: \R \rightarrow [0,1]$ Verteilungsfunktion von $X$.
-Die Funktion $f_{X}: \R \rightarrow \R$ wird Dichte genannt, falls 
-$$
-\forall z \in \R: F_{X}(z) = \int_{x \leq z} f_{X}(x) dx. 
-$$
-\end{Definition}
-
-Für weitere Betrachtungen ist Erwartung einer Zufallsvariablen von essentieller Bedeutung. 
-
-\begin{Definition}\textbf{(Erwartungswert)}
- Sei $f: \chi \rightarrow \R $ messbare Funktion. Der Erwartungswert $E_{X}[f(X)]$ von $f$
- über die Wahrscheinlichkeit von x wird durch 
- $$
- E_{X}[f(X)] := \int_{\R}f(x)dF_{X}(x)
- $$
- definiert. Der Erwartungswert ist nur dann definiert, wenn $\int_{\R}|f(x)|dF_{X}(x) < \infty$.
-\end{Definition}
-
-\begin{Definition}\textbf{(Varianz)}
- Die Varianz $Var(X)$ einer Zufallsvariable $X$ ist definiert durch 
- $$
- Var(X) := E_{X}[(X-\mu)^{2}] = E_{X}[X^{2}] - \mu^{2},
- $$
- wobei $\mu = E_{X}[X]$ der Erwartungswert der Zufallsvariable $X$ ist.  
-\end{Definition}
-
-\begin{Definition}\textbf{(Produktraum)}
- Seien zwei Maßräume $(\chi,\varUpsilon)$ und $(\varphi,\Phi)$ gegeben. Definiere den 
- Produktraum durch $(\chi \times \varphi,\varUpsilon \times \Phi)$. Hierbei bezeichnet
- $\varUpsilon \times \Phi$ die kleinste $\sigma$-Algebra welche die Mengen $\textit{\{}X \times Y | X \in \varUpsilon, Y \in \Phi\textit{\}}$.
- enthält.
- \end{Definition}
-
-\begin{Definition}\textbf{(Marginal und bedingte Wahrscheinlichkeiten)}
-  Sei $(\chi \times \varphi,\varUpsilon \times \Phi, P_{XY})$ der Produktraum von $X$ und $Y$.
-  Das Marginalwahrscheinlichkeitsmaß $P_{X}$ ist dann durch 
-  $$
-  \forall X \in \varUpsilon: P_{X}(X) := P_{XY}(X \times \varphi)
-  $$
-  definiert.
-  Sei $Y \in \Phi$ und $P_{Y}(Y) > 0$, dann ist das bedingte Wahrscheinlichkeitsmaß $P_{X|Y \in Y}$ durch
-  $$
-  \forall Y \in \varUpsilon: P_{X|Y}(X) := \frac{P_{XY}(X \times Y)}{P_{Y}(Y)}
-  $$
-  gegeben.
-\end{Definition}
-
-\begin{Definition}\textbf{Unabhängigkeit}
-  Zwei Zufallsvariablen $X$ und $Y$ werden genau dann unabhängig genannt, wenn 
-  $$
-  \forall X \in \varUpsilon: \forall Y \in \Phi: P_{XY}(X \times Y) = P_{X}(X)P_{Y}(Y).
-  $$
-  In diesem Fall genügen die Marginalverteilungen um den gesamten Produktraum zu definieren.
-\end{Definition}
+  Wir sehen, dass die beiden Gleichungen den ersten Gleichungen im \textit{Trueskill} Paper () entsprechen. 
   
-  Im Folgenden schreibe \textbf{X}, falls \textbf{X} eine Folge $(X_{1},...,X{n})$ von Zufallsvariablen
-  definiert. Eine solche Folge kann je nach Kontext entweder als Zeilen- oder als Spaltenvektor interpretiert 
-  werden. Ein Element des Universums $\chi^{n}$ wird dann durch ein n-Tupel \textbf{x} beschrieben.
-  Sei $\textbf{x} = (x_{1},...,x_{n})$ ein solches n-Tupel, dann verstehe $x \in \textbf{x}$
-  als $\exists i \in \textit{\{} 1,...,n \textit{\}}: x_{i} = x$. 
-
-\begin{Definition}\textbf{(Erwartungswert einer n-dimensionalen Zufallsvariable)}
- Seien $\textbf{X} = (X_{1},...,X_{n})$ n Zufallsvariablen mit gemeinsamem Wahrscheinlichkeitsmaß $P_{X}$, 
- dann ist die Erwartung $E_{\textbf{X}}[\textbf{X}]$ durch das n-Tupel
- $$
- E_{\textbf{X}}[\textbf{X}] = (E_{X_{1}}[X_{1}],...,E_{X_{n}}[X_{n}])
- $$
- gegeben.
-\end{Definition}
-
-\begin{Definition}\textbf{(Kovarianz und Konvarianzmatrix)}
- Seien $X$ und $Y$ zwei Zufallsvariablen mit gemeinsamem Wahrscheinlichkeitsmaß $P_{XY}$,
- dann ist die Kovarianz $Cov(X,Y)$ durch 
- $$
- Cov(X,Y) := E_{XY}[(X-\mu)(Y-\nu)]
- $$
- definiert, wobei $\mu = E_{X}[X]$ und $\nu = E_{Y}[Y]$. Es ist leicht einzusehemn,dass $Cov(X,X) = Var(X)$
- Sei $\textbf{X} = (X_{1},...,X_{n})$ eine Folge von n Zufallsvariablen und $\textbf{Y} = (Y_{1},...,Y_{n})$
- eine weitere solche Folge mit gemeinsamer Dichte $P_{XY}$, dann ist die $n \times m$ Kovarianzmatrix
- \textbf{Cov(X,Y)} definiert durch
- $$
- \textbf{Cov(X,Y)} := 
- \begin{pmatrix}
-  Cov(X_{1},Y_{1}) 	& ... 	& Cov(X_{1},Y_{m})  	\\
-  . 			& ... 	& .  			\\
-  . 			& ... 	& .			\\
-  . 			& ... 	& .		  	\\
-  Cov(X_{n},Y_{1}) 	& ...	& Cov(X_{n},Y_{m}) 
- \end{pmatrix}
- $$
- Falls $\textbf{X} = \textbf{Y}$ $\textbf{Cov(X,X)} = \textbf{Cov(X)}$
- \end{Definition}
- 
- \subsection{Eigenschaften von Zufallsvariablen}
- 
- \begin{Satz}\textbf{(Erwartungswert von Summen und Produkten)}
-  Seien $X$ und $Y$ zwei unabhängige Zufallsvariablen, so gilt
+  \subsubsection{Unsicherheiten}
+  
+  Wie bereits in der Einleitung erwähnt können Skills nur mit einer gewissen Unsicherheit beschrieben werden. Wir beschreiben hier, wie solche Unsicherheiten im \textit{Trueskill} Verfahren
+  berücksichtigt werden. 
+  Dazu nehmen wir an, dass wir eine gauqverteilte Zufallsvariable $y$ gegeben haben und eine neue gaußerverteilte Zufallsvariable $\mathcal{N}(x;y,c^2)$ erhalten wollen, die eine gewisse Unsicherheit
+  $c^2$ berücksichtigt.  
+  Dazu sei $a := (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1}$.
+  Durch Umformungen erhalten wir
   \begin{equation}
-  E_{XY}[X \cdot Y] = E_{X}[X] \cdot E_{Y}[Y], 
+  \begin{split}
+   a &= (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1} = \frac{1}{1+c^2(\pi_y - \pi_{f \rightarrow y})} \\
+   &\approx \frac{\sigma_y^2}{\sigma_y^2 + c^2} \\
+  \end{split}
   \end{equation}
-\begin{equation}
-  E_{XY}[X + Y] = E_{X}[X] + E_{Y}[Y], 
-  \end{equation}
-  immer dann, wenn die Terme auf der rechten Seite existieren. Die zweite Aussage gilt sogar, falls
-  $X$ und $Y$ nicht unabhängig sind. 
- \end{Satz}
-
- \begin{Satz}\textbf{(Linearität des Erwartungswertes)}
-  Für jede n-dimensionale Zufallsvariable $\textbf{X}$, jede Matrix $\textbf{A} \in \R^{m \times n}$
-  und jeden stationären Vektor $\textbf{b} \in \R^{m}$ gilt
-  $$
-  E_{X}[\textbf{AX} + \textbf{b}] = \textbf{A}E_{X}[\textbf{X} + \textbf{b}].
-  $$
-  \end{Satz}
   
-  \begin{Satz}\textbf{Varianz Zerlegung}
-   Seien $X$ und $Y$ zwei unabhängige Zufallsvariablen, dann gilt 
-   $$
-   Var(X + Y) = Var(X) + Var(Y)
-   $$
-  \end{Satz}
-  \begin{Beweis}
-   Setze $\mu = E_{X}[X]$ und $\nu = E_{Y}[Y]$. Benutze die Definition der Varianz
-   $$
-   \begin{array}{c}
-     E_{XY}[(X+Y-E_{XY}[X+Y])^{2}] = E_{XY}[((X-\mu)(Y-\nu))^{2}] \\
-     = E_{XY}[(X-\mu)^{2}+ 2 \cdot (X-\mu)(Y-\nu) + (Y-\nu)^{2}]  \\
-     = E_{X}[(X-\mu)^{2}] + 2E_{XY}[(X-\mu)(Y-\nu)] + E_{Y}[(Y-\nu)^{2}] \\
-     = E_{X}[(X-\mu)^{2}] + 2E_{X}[(X-\mu)]E_{Y}[(Y-\nu)] + E_{Y}[(Y-\nu)^{2}] \\
-     = Var(X) + Var(Y)
-   \end{array}
-   $$
-  \end{Beweis}
+  Es ist somit leicht zu sehen, dass a stets kleiner als 1 ist. Nun kann die Ungewissheit $c^2$ approximativ den Werten $\pi$ und $\tau$ zugewiesen werden: 
+  
+  \begin{equation}
+   \begin{split}
+      \pi_{f \rightarrow x}^{\text{new}} &\leftarrow a(\pi_y - \pi_{f \rightarrow y}) = \frac{1}{\sigma_y^2 + c^2} \\
+      \tau_{f \rightarrow x}^{\text{new}} &\leftarrow a(\tau_y - \tau_{f \rightarrow y}) = \frac{\mu_y}{\sigma_y^2 + c^2} \\
+   \end{split}
+  \end{equation}
 
-  \begin{Lemma}
-   Für jede Zufallsvariable $X$ und jede Konstant $c \in \R$ gilt \\ 
-   $Var(cX) = c^{2} \cdot Var(X)$.
-  \end{Lemma}
+  \subsubsection{Teamperformanz}
+  Dieser Faktor wird benutzt um die Differezen zwischen Teams innerhalb eines Spieles auszudrücken und summiert mehrere gaußverteilte Variablen miteinander.
+  Wir nehmen an, dass wir n Variablen $v_1,...,v_n$ miteinander summieren wollen, wobei jede dieser Variablen mit einem Faktor $a_n$ gewichtet wird und $v_0$ dem Wert der
+  Summe entspricht. Es gilt also: 
+  
+  \begin{equation}
+   v_0 = a_1v_1 + ... + a_nv_n 
+  \end{equation}
+  
+  Aus Kapitel () über die Gaußverteilung wissen wir, dass dies einer Zufallsvariable mit Erwartungswert und Varianz der Form
+  
+  \begin{equation}
+   \begin{split}
+   \mu &= \sum_{i = 1}^n a_i \mu_i \\
+   \sigma^2 &= \sum_{i = 1}^n a_i^2\sigma_i^2 \\ 
+   \end{split}
+  \end{equation}
+  
+  entpricht. Da die Update Formeln durch den Gebrauch der oben eingeführten Notation mithilfe von $\pi$ und $\tau$ einfacher und kompakter zu implementieren sind, 
+  müssen diese in eine solche Form gebracht werden. 
+  
+  \begin{equation}
+   \pi^{new} = \frac{1}{\sigma^2} = \frac{1}{\sum_{j=1}^{n} a_j^2 \sigma_j^2 = (\sum_{j=1}^n \frac{a_j^2}{\pi_j})^{-1}
+  \end{equation}
 
-\subsection{Mehrdimensionale Gauß Verteilung}
+  Für den precision mean müssen wir den $\pi^{new}$ mit mit dem Erwartungswert multiplizieren: 
+  
+  \begin{equation}
+   \tau^{new} = \pi^{new} \cdot \mu = \pi^{new} \cdot (\sum_{j=1}^n a_j \mu_j).
+  \end{equation}
 
-In diesem Abschnitt werden einige der wichtigsten Eigenschaften der Gaussverteilung zusammengefasst.
+  
 
-\begin{Definition} Sei $\mu \in \R^n$ ein Vektor und $A \in \R^{nxm}$ eine deterministische Matrix. 
-Sei weiter $ Y = (Y_{1},...,Y_{m})$ eine Folge von m unabhängigen, normalverteilten Zufallsvariablen
-$Y_{i}$ mit Mittewert Null und Einheitsvarianz ($Y_{i} \sim Normal(0,1)$). Dann wird $X = AY + \mu$ normal-
-oder gaußverteilt mit Erwartungswert $E_{X}[X] = \mu$ und Kovarianzmatrix $Cov(X) = \varSigma = AA^{'}$ genannt.
-Da das Maß $P_{X}$ eindeutig durch diese beiden Größen beschrieben wird schreiben wir im Weiteren auch $Y \sim Normal(\mu , \varSigma)$.
-\end{Definition}
+   
+   \subsection{Multiple Team Games Algorithms}
+   
+   In diesem Abschnitt beschreiben wir die Funktionsweise von Update Algorithmen für Spiele, in denen mehrere 
+   Teams gegeineinander antreten. 
+   Wir nehmen an, dass in einem Spiel $k$ Teams gegeinander antreten, wobei in Team $j$ $n_j$ mit Indizes $\mathbf{i}_j$ Spieler zusammen
+   spielen. Wir gehen außerdem davon aus, dass wir den Spielausgang in Form eines Ranking Vektors
+   $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$ vorliegen. Dies erlaubt es uns die Teams in der Reiheinfolge
+   $ r_{(1)} \leq r_{(2)} \leq ... \leq r_{(k)}$ neu zu ordnen. Dabei bezeichnet $( \cdot )$ eine Permutation 
+   der Indizes von $1,...,k$ bezeichnet, welche die Ordung der Rankings der Team in der gewünschten Reihenfolge
+   erzeugt. Somit ist es möglich den Spielausgang $\mathbf{r}$ mittels Permutation von Teamindizes und einem Vektor 
+   $\mathbf{y} \in \{0, +1\}^{k-1}$ zu schreiben. $\mathbf{y}$ beschreibt dabei, wie Team $j$ und Team $j+1$ gegeneinander
+   gespielt haben. Falls  Team $j$ gegen Team $j+1$ gewonnen hat gelte $(y_j = +1)$, bei einem Unentschieden gelte 
+   $(y_j = 0)$, d.h $y_j = sign(r_{(j+1)} - r_{(j)})$.
+   
+   \subsection{Das Modell}
+   
+   Unsere Grundannahme ist es, dass jeder Spielausgang auf den Leistungen der teilnehmenden Spielern aufbaut. Die 
+   Leistung $x_i$ eines Spielers sei dabei gaußverteilt, sodass der Skill des Spielers $i$, $s_i$ der Erwartung der Gaußverteilung entspricht. 
+   Wir nehmen außerdem an, dass die Varianz der Leistung einzelner Spieler der Konstante $\beta^2$ entspricht. Damit folgt $x_i \sim \mathcal{N}(x_i; s_i, \beta^2)$.
+   Die Leistung $t(\mathbf{i})$ eines Teams mit Indexmenge $\mathbf{i}$ der Spieler sei lineare Funktion der Leistungen der individuellen Spieler, $t(\mathbf{i}) = \mathbf{b(i)^T x}$.
+   Sei eine Stichprobe der Leistungen $\mathbf{x} \in \R^n$ gegeben, so sei das Ranking so definiert, dass das Team mit der größten Leistung auf Rang 1 steht und das Team mit der
+   schlechtesten Leistung an letzter Stelle steht. Sollten zwei Teams, bis auf einen minimalen Unterschied $\epsilon$, die gleiche Leistung erbracht haben so nennen wir dies ein Unentschieden.
+   Nachdem wir die Leistungen der Spieler nach ihren Werten neugeordnet haben betrachten wir stets nur die paarweise Differenz, um zu entscheiden, ob das Team mit größerer Leistung
+   gewinnt, oder ein Unentschieden vorliegt. \\
+   
+   Um dieses Modell mathematisch zu formulieren, definieren wir einen $k-1$-dimensionalen Vektor aus Hilfsvariablen $\mathbf{z}$, wobei $z_j := t(\mathbf{i}_j) - t(\mathbf{i}_{j+1}) = \mathbf{a}_j^T \mathbf{x}$
+   
+   \begin{equation}
+    \mathbf{z} := \mathbf{A}^T \mathbf{x} = [a_1 ... a_{k-1}] \mathbf{x}.
+   \end{equation}
+   
+   Da $\mathbf{x} \sim \mathcal{N}(\mathbf{x};\mathbf{s}, \beta^2 \mathbf{I})$ gaußverteilt ist, wissen wir das $\mathbf{z}$ ebenfalls gaußverteilt ist mit
+   $\mathbf{z} \sim \mathcal{N}(\mathbf{z}; \mathbf{A}^T \mathbf{s}, \beta^2 \mathbf{A} \mathbf{A}^T) $.
+   Damit können wir die Wahrscheinlichkeit eines Rankings $r$ mittels der gemeinsamen Verteilung über $\mathbf{z}$ beschreiben, 
+   
+   \begin{equation}
+    P(\mathbf{y}| \mathbf{s_i}_1,...,\mathbf{s_i}_k) = \prod_{j = 1}^{k-1} (P(z_j > \epsilon))^{y_i}(P(|z_j| \leq \epsilon))^{1 - y_j}.
+   \end{equation}
+   
+   In Kapitel () beschreiben wir Methoden, wie solche Wahrscheinlichkeiten numerisch berechnet werden können. 
 
-\begin{Satz} Falls $X \sim Normal(\mu,\varSigma)$, dann besitzt $X$ genau dann eine Dichte $f_X$, wenn 
-$\varSigma$ positiv definit ist. Die Dichte $f_{X}$ ist gegeben durch 
-\begin{equation}
-f_{X}(x) = \frac{1}{(2\pi)^{n/2}|\varSigma|^{\frac{1}{2}}}\exp(-\frac{1}{2}(x-\mu)^{T}\varSigma^{-1}(x-\mu)) 
-\end{equation}
+   \subsection{Vorhersage Algorithmus}
+   
+   In dieser Phase sind wir daran interessiert, die Wahrscheinlichkeit eines bestimmten Spielausganges $\mathbf{r}$ vorherzusagen, falls die Skills $\mathbf{\mu}$ und die
+   Standardabweichungen $\mathbf{\sigma}$ der Spieler bekannt sind. Dazu müssen wir $P(\mathbf{y})$ aus $P(\mathbf{y}|s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k)$ wo alle Ungewissheiten
+   über die Skills $s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k$ ausmarginalisiert werden. Der Algorithmus ergibt sich leicht aus den in Kapitel () und () vorgestellten Methoden.
+  
+   \subsection{Asymptotische Analyse }
+   
+   In diesem Kapitel untersuchen wir das asymptotische Verhalten des \textit{Trueskill} Verfahrens. Hauptsächlich werden wir die Konvergenz der Skillparameter $\mu$ und $\sigma$ untersuchen.
+   Während Ersterer von den reellen und nicht bekannten Wahrscheinlichkeiten der Spielausgänge zwischen allen Spielen abhängt, wird der Parameter $\sigma$ stets gegen einen festen
+   Wert konvergieren, da jeder neue Spielausgang zu einer Verringerung der Entropie des Skills führt.  
+   
+   \subsubsection{$\sigma$ Analyse}
+   
+   Um den asymptotischen Wert von $\sigma$, den wir mit $\sigma*$ bezeichnen wollen, zu untersuchen machen wir die drei folgenden Annahmen: 
+   
+   \begin{enumerate}
+    \item Im asymtotischen Grenzwert haben alle Spielerskills die gleiche Standardabweichung $\sigma = \sigma* \textbf{1}$.
+    \item Im asymptotischen Grenzwert werden nur Spieler gegeneinander antreten, die gleiche Skills haben. 
+    \item Für jede Paarung von Teams werden die Spiele nicht unentschieden ausgehen.
+   \end{enumerate}
+   
+   Zur Analyse betrachten wir den Update Algorithmus aus Kapitel (). 
+   Da wir den asymptotischen Grenzwert als Grundvorraussetzung annehmen, wissen wir dass eine Aktualisierung der $\sigma*$ Werte diesen Grenzwert unverändert lassen. 
+   
+   \begin{equation}
+   \begin{split}
+    \sigma*^2 &= min_t [(\sigma*^2 + \tau_0^2) (1- (\sigma*^2 + \tau_0^2)) W_{t,t}] \\
+    &= (\sigma*^2 + \tau_0^2)(1-(\sigma*^2 + \tau_0^2) max_t(W_{t,t})). \\
+    \end{split}
+   \end{equation}
+   
+   Wir merken an, dass $W_{t,t}$ von $\beta^2, t_0^2$ und von $\sigma*^2$ abhängt. Wir wissen aus Algorithmus (), dass im asymptotischen Grenzwert für $\mathbf{C}$ und $\mathbf{Z}$
+   gilt:
+   
+   \begin{equation}
+    \begin{split}
+      \mathbf{C} &= (\beta^2 + \sigma*^2 + \tau_0^2) \mathbf{A^T} \mathbf{A} = (\beta^2 + \sigma*^2 + \tau_0^2) \mathbf{C}_0, \\
+      \mathbf{Z} &= (\beta^2 + \sigma*^2 + \tau_0^2) \mathbf{Z}_0 \\
+    \end{split}
+   \end{equation}
+   
+   Dabei bezeichnet $\mathbf{Z}_0$ die Kovarianz einer abgeschnittenen Gaußverteilung mit Erwartung $\mathbf{0}$, Kovarianz $\mathbf{C}_0$ und Integrationsgrenzen
+   $(\epsilon \mathbf{1}, + \mathbf{\infty})$. Dann gilt: 
+   
+   \begin{equation}
+    \begin{split}
+     \mathbf{W} &= \mathbf{A} \mathbf{C}^{-1} ( \mathbf{C} - \mathbf{Z} ) \mathbf{C}^{-1} \mathbf{A}^T \\
+     &= (\beta^2 + \sigma*^2 + \tau_0^2) \mathbf{A} \mathbf{C}_0^{-1} ( \mathbf{C}_0 - \mathbf{Z}_0 ) \mathbf{C}_0^{-1} \mathbf{A}^T. \\
+    \end{split}
+   \end{equation}
+   
+   Nehmen wir an, dass $w_0 = max_t[\mathbf{A} \mathbf{C}_0^{-1} ( \mathbf{C}_0 - \mathbf{Z}_0 ) \mathbf{C}_0^{-1} \mathbf{A}^T]_{t,t} $, so
+   ist der asymptotische Grenzwert vin $\sigma$ implizit gegeben durch: 
+   
+   \begin{equation}
+    \sigma*^2 = \tau_0 \cdot (\sigma*^2 + \tau_0^2) (1 - \frac{ \sigma*^2 + \tau_0^2 }{ \beta^2 + \sigma*^2 + \tau_0^2 } w_0).
+   \end{equation}
+   
+   Dies entspricht einer quadratischen Gleichung in $\sigma*^2$ mit Lösung 
+   
+   \begin{equation}
+    \sigma*^2 = \tau_0^2 \cdot [\frac{1}{2 w_0} + \sqrt{ \frac{1}{2 w_0} (\frac{1}{2 w_0} + \frac{2 \beta^2}{\tau_0^2}) } -1].
+   \end{equation}
 
-\end{Satz}
+  \subsection{Matchmaking and Scoreboards}
+  
+  In diesem Abschnitt beschreiben wir zwei mögliche Erweiterungen des \textit{Trueskill} Verfahrens: Matchmaking and Scoreboards.
+  Beide Erweiterungen sind besonders in \textit{Online-Video-Spielen} von großer Bedeutung. 
+  
+  \subsubsection{Matchmaking}
+  
+  Die Hauptaufgabe im Matchmaking ist es Spiele zu identifizieren, sodass die Spieler in den Spielen möglichst zufrieden sind. 
+  Natürlich ist meist das gewinnende Team zufrieden, aber Spiele zu erzeugen in denen jeder Spieler gewinnt ist unmöglich. 
+  Wir definieren deshalb ein zufriedenstellendes Spiel, als ein solches Spiel, in dem jeder Spieler die faire Chance hat das Spiel 
+  zu gewinnen. Anders ausgedrückt, ein zufriedenstellendes Spiel, ist ein Spiel in dem die Wahrscheinlichkeit eines Unentschiedens sehr groß ist. \\
+  Wir entfernen die Abhängigkeit auf den \textit{Draw Margin} $\epsilon$ durch die Annahme dass im Grenzwert $\epsilon \rightarrow 0$ gilt. 
+  Sind die Erwartungen und Kovarianzen der Spielerskills durch $\mu$ und $\varSigma$ gegeben, so gilt: 
+  
+  \begin{equation}
+   \begin{split}
+    P(draw| \mu, \varSigma) &= \lim_{\epsilon \rightarrow 0} \int_{- \epsilon \mathbf{1}}^{+ \epsilon \mathbf{1}} \mathcal{N}(\mathbf{z;A^T \mu; A^T (\beta^2 I + \varSigma)A}) d \mathbf{z} \\
+    &= \mathcal{N}(\mathbf{0; A^T \mu; A^T(\beta^2 I + \varSigma) A}).
+   \end{split}
+  \end{equation}
+  
+  Die Matrix $A$ beschreibt das Spiel, wie in () beschrieben. Um dieses Maß für jedes Spiel vergleichen zu können, vergleichen wir diese Wahrscheinlichkeit mit der Wahrscheinlichkeit
+  eines Unentschiedens im gleichen Spiel, wobei alle Teams den gleichen Skill haben, d.h $\mathbf{A^T \mu = 0}$. Damit kann das Maß für die Qualität eines Spieles durch
+  
+  \begin{equation}
+   \begin{split}
+    q_{draw}(\mathbf{\mu,\varSigma,\beta,A}) &:= \frac{\mathcal{N}(\mathbf{0;A^T \mu; A^T (\beta^2 I + \varSigma) A})}{\mathcal{N}(\mathbf{0;0; \beta^2 A^T A})} \\
+    &= exp(-\frac{1}{2} \mathbf{\mu^T A (\beta^2 A^T A + A^T \varSigma A)}^{-1} \mathbf{A^T \mu}) \cdot \sqrt{ \frac{|\beta^2 \mathbf{A^T A}|}{|\beta^2 \mathbf{A^TA + A^T \varSigma A}|} }. \\
+   \end{split}
+  \end{equation}
+  beschrieben werden.
+  Dieses Maß hat die Eigenschaft, dass es stets zwischen $0$ und $1$ liegt. Nimmt es den Wert $1$ an, so bedeutet dies ein perfektes Spiel. In dem Fall, dass alle Spieler
+  in $k$ Teams aufgeteilt sind und vorher noch nie ein Spiel gespielt haben, so nimmt das Maß den Wert
+  
+  \begin{equation}
+   exp(- \frac{\mu_0^2}{2(\beta^2 \sigma_0^2)} \mathbf{1_i^T A (A^T A)^{-1} A^T 1_i}) \cdot \frac{\beta^k}{\sqrt{(\beta^2 + \sigma_0^2)^k}}
+  \end{equation}
 
-\begin{Satz}
- Sei $X \sim Normal(\mu,\varSigma)$ eine n-dimensional normalverteilte Zufallsvariable,
- $A \in R^{mxn}$ stationäre Matrix und $b \in \R^m$ stationärer Vektor. Dann ist auch die Zufallsvariable 
- $Y = AX + b$ normalverteilt mit $Y \sim Normal(A\mu + b, A\varSigma A^{T})$.
-\end{Satz}
+  an. 
+  
+  \subsubsection{Matchmaking Qualität}
+  
+  Für die folgende Analyse betrachten wir den Spezialfall, dass zwei Spieler $i$ und $j$ gegeneinander antreten. In diesem Fall kann das Maß der Spielqualität mithilfe der Differenz
+  der beiden Erwartungen der Spielerskills und der Summe der Varianzen geschrieben werden. Sei $m_{ij} := \mu_i - \mu_j$ und $\zeta_{ij}^2 := \sigma_i^2 + \sigma_j^2$. Dann gilt:
+  
+  \begin{equation}
+   q_{draw}(m_{ij}, \zeta_{ij}^2, \beta) = exp(- \frac{m_{ij}^2}{2(2 \beta^2 + \zeta_{i,j}^2)}) \cdot \sqrt{ \frac{2 \beta^2}{2 \beta^2 + \zeta_{ij}^2}}.
+  \end{equation}
 
-\begin{Satz}
- Angenommen $P_{X|Y=y}=Normal(Xy,\Gamma)$ ist normalverteiltes Wahrscheinlichkeitsmaß, wobei 
- $X \in \R^{mxn}$ und $\Gamma \in \R^{mxm}$ stationäre Matrizen für alle Werte $y \in \R^{n}$ sind. Falls
- $P_{Y} = Normal(\mu,\varSigma)$ normalverteiltes Wahrscheinlichkeitsmaß ist, so gilt
- 
- \begin{equation}
- P_{Y|X=x} = Normal(\Psi(X^{T}\Gamma^{-1}x+\varSigma^{-1}\mu),\Psi).
- \end{equation}
- \begin{equation}
-  P_{X} = Normal(X\mu,\Gamma+X\varSigma X^{T}).
- \end{equation}
- ,wobei $\Psi = (X^{T}\Gamma^{-1}X+\varSigma^{-1})^{-1}$
-\end{Satz}
+  Um das Maß () zu untersuchen vergleichen wir dieses, mit den Maßen der (erwarteten) Skilldifferenzen, 
+  
+  \begin{equation}
+   \begin{split}
+    q_1(m_{ij}, \zeta_{ij}^2, \beta) &= exp(-E[|s_i-s_j|]) \\
+    &= exp(-(m_{ij} ( 2 \Phi(\frac{m_{ij}}{\zeta_{ij}})-1) + \zeta_{ij} \mathcal{N}(\frac{m_{ij}}{\zeta_{ij}})), \\
+    q_1(m_{ij}, \zeta_{ij}^2, \beta) &= exp(-E[|s_i-s_j|^2]) \\
+    &= exp(- (m_{ij}^2 + \zeta_{ij}^2)).
+   \end{split}
+  \end{equation}
+  
+  All diese Maße haben die Eigenschaft, dass für Spieler mit gleicher Erwartung, $m_{ij} = 0$, und dass Ungewissheiten in den Skills die Spielqualität negativ beeinflussen. \\
+  Um ein Spiel am Anfang zu akzeptieren wählen wir als Qualitätsschwellenwert $q(0,2 \sigma_0^2, \beta)$. \\
+  Wenn die Skills der Spieler konvergiert sind aktzeptieren wir dann ein Spiel sobald die Differenz der Erwartungen der Spielerskills $q(m_{ij},0, \beta) = q(0,2 \sigma_0^2, \beta)$ erfüllt. 
+  Lösen wir diese Gleichung nach $m_{ij}$, so erhalten wir die Gewinnwahrscheinlichkeit des besseren Spielers.
+  Gehen wir von () aus, so erhalten wir z.B, 
+  
+  \begin{equation}
+   m_{ij} = \sqrt{2} \beta \sqrt{\ln(1 + \frac{\sigma_0^2}{\beta^2})} \Leftrightarrow P(\text{better wins}) = \Phi(\sqrt{1+ \frac{\sigma_0^2}{\beta^2}}).
+  \end{equation}
+  
+  Anschaulich ist diese Wahrscheinlichkeit in Abbildung () dargestellt. Wir können sehen, dass das Maß für die Spielqualität deutlich besser ist, als das Maß für die erwarteten Skill 
+  Differenzen. 
 
-\begin{Beweis}
- Nach Satz () wissen wir, dass 
-$$
-  f_{Y|X=x(y)} = \frac{f_{X|Y=y}f_{Y}(y)}{\int_{\R^n}f_{X|Y=y^{'}(x)}f_{Y}(y^{'})dy^{'}} 
- = \frac{f_{X|Y=y}(x)f_{Y}(y)}{f_{X}(x)}.
-$$
 
- Es fällt auf, dass der Nenner unabhängig von $y$ ist. Betrachte nun deshalb zunächst den Zähler.
- Mithilfe von Definition ist Letzteres gegeben durch 
- $$ 
- c\cdot exp(-\frac{1}{2}((x-Xy)^{T}\Gamma^{-1}(x-Xy)+(y-\mu)^{T}\varSigma^{-1}(y-\mu))),
- $$
-
- 
- wobei $c = (2\pi)^{\frac{-m+n}{2}}|\Gamma|^{-\frac{1}{2}}|\Gamma|^{-\frac{1}{2}}$ unabhängig von 
- $x$ und $y$ ist.
- Diesen Ausdruck wiederum können wir umschreiben als 
- 
- $$
- c \cdot exp(-\frac{1}{2}((y-x)^{T}C(y-c)+d(x))), 
- $$
- mit 
- 
- $$
- C = X^{T}\Gamma^{-1}X+\varSigma^{-1},
- $$
- 
- $$
- Cc = X^{T}\Gamma^{-1}X+\varSigma^{-1}\mu,
- $$
- 
- $$
- d(x) = (x-X\mu)^{T}(\Gamma+X\varSigma X^{T})^{-1}(x-X\mu).
- $$
- 
- Da $d(x)$ als Funktion nicht von $y$ abhängt, kann der Term $exp(-\frac{1}{2}d(x))$ mit in die
- Konstante c gezogen werden und somit folgt die erste Gleichung des Satzes indem $\Psi:=C^{-1}$
- gesetzt wird.\\
- Um die Zweite Aussage zu zeigen kann die Definition von $f_{X}(x)$ benutzt werden, d.h,
- 
- $$
- \begin{array}{c}
-  f_{X}(x) = \int_{\R^{n}}c \cdot exp(-\frac{1}{2}((y^{'}-c)^{T}C(y^{'}-c)+d(x))dy^{'} \\
- = c \cdot exp(-\frac{1}{2}d(x)) \cdot \int_{\R^{n}}exp(-\frac{1}{2}((y^{'}-c)^{T}C(y^{'}-c))dy^{'}\\
- = c \cdot exp(-\frac{1}{2}d(x)) \cdot (2\pi)^{\frac{n}{2}}|C|^\frac{1}{2} = c^{'} \cdot exp(-\frac{1}{2}d(x))\\
- = c^{'} \cdot exp(-\frac{1}{2}(x-X\mu)^{T}(\Gamma+X\varSigma X^T)^{-1}(x-X\mu)),
- \end{array}
- $$
- wobei die dritte Zeile aus der Definition und der Tatsache folgt, dass sich Wahrscheinlichkeitsdichten
- zu Einer zusammenfassen lassen. Dies zeigt die zweite Aussage. 
-\end{Beweis}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -598,7 +652,7 @@ p(v_1,v_2,v_3,v_4,v_5) = p(v_1|v_2)p(v_2)p(v_3|v_2,v_4)p(v_4)p(v_5|p_4)
 $$
 beschreibt. 
 
-\subsection{Sum-Product Algorithmus}
+\subsection{Summen-Produkt-Algorithmus}
 
 Sei $g(X)$ globale Funktion über die Variablen der Menge $X = \{ x_i : i \in N \}$, wobei Variable $x_i$ Werte
 der endlichen Menge $A_i$ annimmt.
@@ -665,7 +719,7 @@ Figur \textbf{FIGUR EINFÜGEN!!!} zeigt das Fragment eines Faktorgraphen. Die Up
  F_x(x) = \mu_{x \rightarrow A}(x) \cdot \mu_{A \rightarrow x}(x)
 \end{equation}
 
-\subsection{Belief Propagation in Baysschen Netzwerken}
+\subsection{\textit{Belief Propagation} in Baysschen Netzwerken}
 
 \text{FIGUR EINFÜGEN!!!}\\
 Die Verteilungsfunktion () eines Bayssschen Netzwerkes erlaubt eine intuitive Umformulierung zur Representation
@@ -678,175 +732,13 @@ Diese Pfeile erlauben es uns einen Faktorgraphen ebenso als Bayssches Netzwerk a
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Expection Propagation}
-In diesem Kapitel werden rekursive Approximationstechniken beschrieben, um die KL-Divergenz zwischen Posterior und Approximation 
-zu minimieren. Das sogenannte "Assumed-density Filtering" ist eine schnelle Methode auf diesem Gebiet. "Expectation Propagation" oder kurz
-EP ist eine Erweiterung des "Assumed-density Filtering" um Situationen stapelweise zu verarbeiten. Es hat höhere Genauigkeit als
-das "Assumed-density Filtering" und andere vergleichbare Methoden um Schlussfolgerungen zu approximieren. 
-
-\subsection{Assumed-density Filtering}
-
-Dieser Abschnitt fasst die Idee des "Assumed-density Filtering" (ADF) zusammen um die Grundlagen für die Methode des "Expectation Propagation" zu
-schaffen. "Assumed-density Filtering" ist eine der grundlegenden Techniken, um Posterior in Baysschen Netzwerken und anderen
-statistischen Modellen zu approximieren. \\
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  \newpage  % neuer Abschnitt auf neue Seite, kann auch entfallen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Ein Ansatz mittels Faktorgraphen für das Trueskill Verfahren}
-Das Trueskill Verfahren ist ein Bayssches Ranking Verfahren, dass in seinen Grundzügen eine Erweiterung des
-Elo Ranking Systems aus dem Schach ist. 
-Dieses neue System beachtet Unsicherheiten in der Bewertung eines Spielers, stellt neue Modelle für ausgeglichene
-Spiele auf und kann die Skills eines einzelnen Spielers aus dem Rang eines Teams ermitteln. 
-Unsicherheiten werden durch eine Approximierung des message passing in faktorgraphen simuliert.  
 
-\subsection{Der Trueskill Faktorgraph}
-
- Sei ${1,...,n}$ eine Menge von Spielern, die in $k$ Teams gegeneinander antreten. Die Zuweisung der Teams sei durch k disjunkte Teilmengen
- $A_j \subset \{1,...,n\}$ mit $A_i \cap A_j = \emptyset \text{ für } i \neq j$ eindeutig beschrieben. Der Ausgang des Spiels sei definiert durch $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$,
- wobei $r_j$ der Rang eines jeden Teams $j$ sei. Falls $r_j = 1$, so hat Team $j$ das Spiel gewonnen. Falls $r_i = r_j \text{ für } i \neq j$ so sagen wir, dass Team i gegen Team j
- unentschieden gespielt hat. 
- 
- Wir wollen die Wahrscheinlichkeit $P(r|s,A)$ eines bestimmten Spielausganges $\mathbf{r}$ mit gegebenen Skills $\mathbf{s}$ der Spieler und einer Teamzuweisung $A := (A_1,...,A_k)$ modellieren. 
- Mithilfe der Bayschen Regel erhalten wir für die Posterior Verteilung
- 
- \begin{equation}
-  p(\mathbf{s}|\mathbf{r},A) = \frac{P(\mathbf{r}|\mathbf{s},A)p(\mathbf{s})}{P(\mathbf{r}|A)}.
- \end{equation}
-
- Dabei nehmen wir an, dass $p(\mathbf{s}) := \prod_{i = 1}^n \mathcal{N}(s_i;\mu_i,\sigma_i^2)$. Dies macht Sinn, da der Faktorgraph selbst eine Menge von Multiplikationen darstellt, um
- eine gemeinsame Verteilung zu finden. 
- Wir weisen außerdem jedem Spieler in einem Spiel eine Leistungen $p_i \sim \mathcal{N}(p_i; s_i,\beta^2)$ mit Zentrum $s_i$ und Varianz $\beta^2$ zu. Die Leistungen $t_j$ eines Teams
- $j$ entspricht der Summe $t_j := \sum_{i \in A_j} p_i$ der Spieler des Teams. 
- 
- Ordnen wir die Teams nach ihren Rängen im Spielausgang $\mathbf{r}$ und nehmen wir an, dass unentschieden zunächst nicht zugelassen sind, so erhalten wir
- 
- \begin{equation}
-  P(\mathbf{r}| \{t_1,...,t_k\}) = P(\mathbf{r}| \{t_r(1),...,t_r(k)\}).
- \end{equation}
-
- Sind unentschieden zugelassen, so erfordert der Spielausgang $r_(j) < r_(j+1)$ $t_r(1) > t_r(j+1) + \epsilon$ und ein unentschieden der Art $r_(j) = r_(j+1)$ umgekehrt 
- $|t_r(1) - t_r(j+1)| \leq \epsilon$, wobei $\epsilon > 0$ ein Maß für die Gewinnspanne ist.
- 
- Wir wollen nun nach jedem Spiel die Skills der Spieler in Abhängigkeit des Spielausganges $\mathbf{r}$ auktualisieren und nutzen dafür die Darstellung mittels Faktorgraphen und
- den daran gebundenen Expectation Propagation Algorithmus. 
- Dazu approximieren wir die Posterior Verteilungen gaußverteilt und verwenden sie im darauf folgenden Spiel als Prior Verteilungen. 
- 
- Um das Verfahren an einem Beispielgraphen herleiten und erklären zu können, betrachten wir folgendes Spiel. 
- Wir nehmen an, dass $k = 3$ Teams mit $A_1 = \{1\}, A_2 = \{2,3\} \text{ und } A_3 = \{4\}$ gegeneinander antreten. 
- Der Spielausgang sei $\mathbf{r} = (1,2,2)$. Dies bedeutet, dass Team 1 das Spiel gewonnen hat und Team 2 und Team 3 unentschieden gespielt haben. 
- In Figur () geben wir den korrespondierenden Trueskill Faktor Graphen an.
- 
- Wie bereits in Kapitel () beschrieben, ist die grundlegende Idee eine gemeinsame Wahrscheinlichkeitsverteilung von mehreren Zufallsvariablen 
- in zwei verschiedene Typen von Knoten aufzuteilen. Schwarze Boxen stellen Faktorknoten und Kreise Variablenknoten dar. 
- Die gemeinsame Verteilung ergibt sich dann als Produkt der einzelnen Faktoren: 
- 
- \begin{equation}
-  p(X) = \frac{1}{Z} \prod_S f_S(X_S)
- \end{equation}
- 
- $X_S$ beschreibt die zu einem Faktor $f_S$ zugehörigen Variablen und $Z$ sei Normalisierungskonstante. 
- Das wichtigste Konzept ist dann die Anwendung der Summen-Produkt-Update Regel: 
- 
- \textit{Jede Nachricht, die von einem Knoten v über eine Kante e übermittelt wird, entspricht dem Produkt der lokalen Funktion an v (Oder der Einheitsfunktion, falls v Variablenknoten
- ist) mit allen eingegangenen Nachrichten an v außer an Kante e.}
- 
- In Anlehnung an Kapitel () ergeben sich damit die drei folgenden Gleichungen
- 
- \begin{equation}
-  p(v_k) = \prod_{f \in F_{v_k}}m_{f \rightarrow v_k}(v_k)
- \end{equation}
- 
- Gleichung () sagt uns, dass der Wert des Marginales an $v_k$ dem Produkt der eingehenden Nachrichten entspricht. 
- 
- \begin{equation}
-  m_{f \rightarrow v_j}(v_j) = \int ... \int f(v) \prod_{i \neq j} m_{v_i \rightarrow f}(v_i) d \mathbf{v}_{\backslash j}
- \end{equation}
-
- Gleichung () zeigt, dass der Wert einer Nachricht von einem Faktor $f$ zu einer Variable $v_j$ der Summe über das Produkt aller anderen Nachrichten zwischen diesem Faktor
- und abhängigen Variablen außer $v_j$ entspricht. 
- 
- \begin{equation}
-  m_{v_k \rightarrow f}(v_k) =  \prod_{f' \in F_{v_k}\backslash \{f\} }m_{f' \rightarrow v_k}(v_k)
- \end{equation}
-
- Gleichung () beschreibt, dass die Nachricht von einer Variable $v_k$ zu einem Faktor $f$ das Produkt aller anderen Nachrichten ist. 
- 
- Für weitere Details möchten wir auf Kapitel () und die dortigen Bespiele verweisen. 
- 
- \subsection{Prior Faktoren}
- 
- Betrachten wir die erste Ebene des Trueskill Graphen Prior Faktor ist im Trueskill Graphen als schwarze Box dargestellt. 
- 
- % Prior Bild
- 
- Um die Trueskill Update Formeln vereinfacht darstellen zu können, verwenden wir die folgenden Notationen
- 
- \begin{equation}
-  \begin{split}
-    \pi &= \sigma^{-2} = \frac{1}{\sigma^2} \\
-    \tau &= \pi \mu = \frac{\mu}{\sigma^2} \\
-   \end{split} 
- \end{equation}
- 
- Das Ziel des Prior Faktors ist es diese Werte einer gaußverteilten Zufallsvariable mit Erwartung $m$ und Varianz $v\nu^2$ zu aktualisieren. 
- Mit obiger Notation ergibt sich also:
- 
- \begin{equation}
-  \begin{split}
-    \pi_x^{\text{new}} &\leftarrow \pi_x + \frac{1}{\nu^2} \\
-    \tau_x^{\text{new}} &\leftarrow \tau_x + \frac{m}{\nu^2} \\
-  \end{split}
- \end{equation}
-
-  Wir sehen, dass die beiden Gleichungen den ersten Gleichungen im Trueskill Paper () entsprechen. 
-  
-  \subsection{Unsicherheiten}
-  
-  Wie bereits in der Einleitung erwähnt können Skills nur mit einer gewissen Unsicherheit beschrieben werden. Wir beschreiben hier, wie solche Unsicherheiten im Trueskill Verfahren
-  berücksichtigt werden. 
-  Dazu nehmen wir an, dass wir eine gauqverteilte Zufallsvariable $y$ gegeben haben und eine neue gaußerverteilte Zufallsvariable $\mathcal{N}(x;y,c^2)$ erhalten wollen, die eine gewisse Unsicherheit
-  $c^2$ berücksichtigt.  
-  Dazu sei $a := (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1}$.
-  Durch Umformungen erhalten wir
-  \begin{equation}
-  \begin{split}
-   a &= (1+c^2(\pi_y - \pi_{f \rightarrow y}))^{-1} = \frac{1}{1+c^2(\pi_y - \pi_{f \rightarrow y})} \\
-   &\approx \frac{\sigma_y^2}{\sigma_y^2 + c^2} \\
-  \end{split}
-  \end{equation}
-  
-  Es ist somit leicht zu sehen, dass a stets kleiner als 1 ist. Nun kann die Ungewissheit $c^2$ approximativ den Werten $\pi$ und $\tau$ zugewiesen werden: 
-  
-  \begin{equation}
-   \begin{split}
-      \pi_{f \rightarrow x}^{\text{new}} &\leftarrow a(\pi_y - \pi_{f \rightarrow y}) = \frac{1}{\sigma_y^2 + c^2} \\
-      \tau_{f \rightarrow x}^{\text{new}} &\leftarrow a(\tau_y - \tau_{f \rightarrow y}) = \frac{\mu_y}{\sigma_y^2 + c^2} \\
-   \end{split}
-  \end{equation}
-
-  \subsection{Teamperformanz}
-  Dieser Faktor wird benutzt um die Differezen zwischen Teams innerhalb eines Spieles auszudrücken und summiert mehrere gaußverteilte Variablen miteinander.
-  Wir nehmen an, dass wir n Variablen $v_1,...,v_n$ miteinander summieren wollen, wobei jede dieser Variablen mit einem Faktor $a_n$ gewichtet wird und $v_0$ dem Wert der
-  Summe entspricht. Es gilt also: 
-  
-  \begin{equation}
-   v_0 = a_1v_1 + ... + a_nv_n 
-  \end{equation}
-  
-  Aus Kapitel () über die Gaußverteilung wissen wir, dass dies einer Zufallsvariable mit Erwartungswert und Varianz der Form
-  
-  \begin{equation}
-   \begin{split}
-   \mu &= \sum_{i = 1}^n a_i \mu_i \\
-   \sigma^2 &= \sum_{i = 1}^n a_i^2\sigma_i^2 \\ 
-   \end{split}
-  \end{equation}
-  
-  entpricht. Da die Update Formeln durch den Gebrauch der oben eingeführten Notation mithilfe von $\pi$ und $\tau$ einfacher und kompakter zu implementieren sind, 
-  müssen diese in eine solche Form gebracht werden. 
   
 \section{Hochdimensionale Integration}
 
@@ -1044,7 +936,7 @@ Das so entstandene Verfahren
   
   ,wobei D die beobachtete Datenmenge bezeichnet. 
   
-  Wie auch im Kapitel () über das Trueskill Verfahren deutlich wird, sind wir daran interessiert
+  Wie auch im Kapitel () über das \textit{Trueskill} Verfahren deutlich wird, sind wir daran interessiert
   die Posterior Erwartung und Varianz der Unbekannten zu bestimmen. Diese ergeben sich als Integrale 
   über den Posterior: 
   
@@ -1102,7 +994,7 @@ Das so entstandene Verfahren
    P(D, \Theta) = \prod_i t_i(\Theta).
   \end{equation}
   
-  Für klassiusche Bayssche Netzwerke, die auch im Trueskill Verfahren auftreten wählen wir eine 
+  Für klassiusche Bayssche Netzwerke, die auch im \textit{Trueskill} Verfahren auftreten wählen wir eine 
   Faktorisierung mittels bedingter Wahrscheinlichkeiten: $\prod_{nodes} P(Y|pa(Y))$, wobei $pa(Y)$
   die Eltern von Knoten $Y$ im zugehörigen Graphen beschreibt. \\
   Im zweiten Schritt wählen wir eine parametrische Approximationsverteilung. Dabei ist es von großer Bedeutung, 
@@ -1134,7 +1026,7 @@ Das so entstandene Verfahren
   \begin{equation}
   \begin{split}
    \mathbf{m}_{\Theta}^{new} &= \int_{\Theta} P(\Theta) \Theta d \Theta \\
-   \nu_{\Theta}^{new} d + (\mathbf{m_\Theta}^{new}^T \mathbf{m_\Theta}^{new}) &= \int_{\Theta} P(\Theta) \Theata^T \Theta d \Theta \\
+   \nu_{\Theta}^{new} d + (\mathbf{m_{\Theta}^{new}}^T \mathbf{m_{\Theta}}^{new}) &= \int_{\Theta} P(\Theta) \Theta^T \Theta d \Theta \\
   \end{split}
   \end{equation}
    
@@ -1504,7 +1396,7 @@ Das so entstandene Verfahren
    \begin{equation}
     \begin{split}
       B &= (\mathbf{m}_w^{new})^T (\mathbf{V}_w^{new})^{-1} (\mathbf{m}_w^{new}) - \sum_i \frac{m_i^2}{v_i} \\
-      P(D) &\approx |\mathbf{V}_w^{new}|^{1/2} exp(B/2) \prod_{i = 1}^ s_i \\
+      P(D) &\approx |\mathbf{V_w^{new}}|^{1/2} exp(B/2) \prod_{i = 1}^ s_i \\
      \end{split}
    \end{equation}
   \end{enumerate}
@@ -1513,54 +1405,308 @@ Das so entstandene Verfahren
   an Iterationen konstant ist benötigt das finden des \textit{Bayes-Point} mit diesem Algorithmus
    $\mathcal{O}(nd^2)$. Das Berechnen der Normalisierungskonstante am Ende braucht  $\mathcal{O}(d^3)$ Zeit. 
 
-   \section{Grober Rahmen}
-   
-   \subsection{Multiple Team Games Algorithms}
-   
-   In diesem Abschnitt beschreiben wir die Funktionsweise von Update Algorithmen für Spiele, in denen mehrere 
-   Teams gegeineinander antreten. 
-   Wir nehmen an, dass in einem Spiel $k$ Teams gegeinander antreten, wobei in Team $j$ $n_j$ mit Indizes $\mathbf{i}_j$ Spieler zusammen
-   spielen. Wir gehen außerdem davon aus, dass wir den Spielausgang in Form eines Ranking Vektors
-   $\mathbf{r} := (r_1,...,r_k) \in \{1,...,k\}$ vorliegen. Dies erlaubt es uns die Teams in der Reiheinfolge
-   $ r_{(1)} \leq r_{(2)} \leq ... \leq r_{(k)}$ neu zu ordnen. Dabei bezeichnet $( \cdot )$ eine Permutation 
-   der Indizes von $1,...,k$ bezeichnet, welche die Ordung der Rankings der Team in der gewünschten Reihenfolge
-   erzeugt. Somit ist es möglich den Spielausgang $\mathbf{r}$ mittels Permutation von Teamindizes und einem Vektor 
-   $\mathbf{y} \in \{0, +1\}^{k-1}$ zu schreiben. $\mathbf{y}$ beschreibt dabei, wie Team $j$ und Team $j+1$ gegeneinander
-   gespielt haben. Falls  Team $j$ gegen Team $j+1$ gewonnen hat gelte $(y_j = +1)$, bei einem Unentschieden gelte 
-   $(y_j = 0)$, d.h $y_j = sign(r_{(j+1)} - r_{(j)})$.
-   
-   \subsection{Das Modell}
-   
-   Unsere Grundannahme ist es, dass jeder Spielausgang auf den Leistungen der teilnehmenden Spielern aufbaut. Die 
-   Leistung $x_i$ eines Spielers sei dabei gaußverteilt, sodass der Skill des Spielers $i$, $s_i$ der Erwartung der Gaußverteilung entspricht. 
-   Wir nehmen außerdem an, dass die Varianz der Leistung einzelner Spieler der Konstante $\beta^2$ entspricht. Damit folgt $x_i \sim \mathcal{N}(x_i; s_i, \beta^2)$.
-   Die Leistung $t(\mathbf{i})$ eines Teams mit Indexmenge $\mathbf{i}$ der Spieler sei lineare Funktion der Leistungen der individuellen Spieler, $t(\mathbf{i}) = \mathbf{b(i)^T x}$.
-   Sei eine Stichprobe der Leistungen $\mathbf{x} \in \R^n$ gegeben, so sei das Ranking so definiert, dass das Team mit der größten Leistung auf Rang 1 steht und das Team mit der
-   schlechtesten Leistung an letzter Stelle steht. Sollten zwei Teams, bis auf einen minimalen Unterschied $\epsilon$, die gleiche Leistung erbracht haben so nennen wir dies ein Unentschieden.
-   Nachdem wir die Leistungen der Spieler nach ihren Werten neugeordnet haben betrachten wir stets nur die paarweise Differenz, um zu entscheiden, ob das Team mit größerer Leistung
-   gewinnt, oder ein Unentschieden vorliegt. \\
-   
-   Um dieses Modell mathematisch zu formulieren, definieren wir einen $k-1$-dimensionalen Vektor aus Hilfsvariablen $\mathbf{z}$, wobei $z_j := t(\mathbf{i}_j) - t(\mathbf{i}_{j+1}) = \mathbf{a}_j^T \mathbf{x}$
-   
-   \begin{equation}
-    \mathbf{z} := \mathbf{A}^T \mathbf{x} = [a_1 ... a_{k-1}] \mathbf{x}.
-   \end{equation}
-   
-   Da $\mathbf{x} \sim \mathcal{N}(\mathbf{x};\mathbf{s}, \beta^2 \mathbf{I})$ gaußverteilt ist, wissen wir das $\mathbf{z}$ ebenfalls gaußverteilt ist mit
-   $\mathbf{z} \sim \mathcal{N}(\mathbf{z}; \mathbf{A}^T \mathbf{s}, \beta^2 \mathbf{A} \mathbf{A}^T) $.
-   Damit können wir die Wahrscheinlichkeit eines Rankings $r$ mittels der gemeinsamen Verteilung über $\mathbf{z}$ beschreiben, 
-   
-   \begin{equation}
-    P(\mathbf{y}| \mathbf{s_i}_1,...,\mathbf{s_i}_k) = \prod_{j = 1}^{k-1} (P(z_j > \epsilon))^{y_i}(P(|z_j| \leq \epsilon))^{1 - y_j}.
-   \end{equation}
-   
-   In Kapitel () beschreiben wir Methoden, wie solche Wahrscheinlichkeiten numerisch berechnet werden können. 
+\section{Wahrscheinlichkeitstheorie}
+Dieses Kapitel gibt einen Überblick über einige wichtige Konzepte der Wahrscheinlichkeitstheorie.
+Im Folgenden werden Mengen mit Großbuchstaben, z.B. $X$, und deren Elemente mit Kleinbuchstaben, z.B $x$,
+bezeichnet. Für Mengen definiere die Indikatorfunktion $I_{X}$ durch 
+$$
+I_{X}(x) := \begin{cases}0&\text{falls }x\notin X\\1&\text{falls }x \in X\end{cases}
+$$
 
-   \section{Vorhersage Algorithmus}
+\begin{Definition}\textbf{($\sigma$-Algebra)}
+ Sei eine Menge $\chi$ gegeben. Ein Mengensystem $\varUpsilon$ von Mengen $X \subseteq \chi$ wird 
+ genau dann $\sigma$-Algebra über $\chi$ genannt, wenn 
+ \begin{enumerate}
+  \item Ist eine Menge X $\in$ $\varUpsilon$ enthalten, so auch ihr Komplement $X^{c} = \chi \backslash X$.
+  \item Falls $X_{i} \in \varUpsilon,$ $i=1,...,\infty$ abzählbares Mengensystem in $\varUpsilon$
+  ,dann sind auch $\cup_{i=1}^{\infty}X_{i} \in \varUpsilon$ und $\cap_{i=1}^{\infty}X_{i} \in \varUpsilon$ in 
+  $\varUpsilon$ enthalten.
+ \end{enumerate}
+
+\end{Definition}
+
+Kurz, jede $\sigma$-Algebra ist abgeschlossen unter Komplementbildung und abzählbaren Vereinigungen oder
+Schnitten. 
+
+\begin{Definition}\textbf{(Borelmengen)}
+ Sei $\chi = \R^{n}$, die Borelmengen $B_{n}$ sind die kleinsten $\sigma$-Algebren, die alle 
+ offenen Intervalle 
+ $$
+ \textit{\{}(x_{1},...,x_{n})\in \R^{n} | \forall i \in \textit{\{}1,...,n\textit{\}}: x_{i} \in (a_{i},b_{i})\textit{\}}
+ $$
+ für alle $a_{i},b_{i} \in \R$. Bemerke, dass $B_{n}$ überabzählbar ist. 
+\end{Definition}
+
+\begin{Definition}\textbf{(Maß- und Wahrscheinlichkeitsraum)}
+ Ein messbarer Raum ist ein Tupel $(\chi,\varUpsilon)$. Dabei ist $\chi$ das Universum und 
+ $\varUpsilon$ $\sigma$-Algebra über $\chi$. Ein Wahrscheinlichkeitsraum ist ein Tripel $(\chi,\varUpsilon,P)$,
+ wobei $P$ ein Wahrscheinlichkeitsmaß auf $\chi$ ist. D.h. $P: \varUpsilon \rightarrow [0,1]$, sodass
+ $P(\chi) = 1$ und für disjunkte abzählbare Vereinigungen $X_{i} \in \varUpsilon$, $i= 1,...\infty$ gilt
+ $$
+ P(\cup_{i=1}^{\infty}X_{i}) = \sum_{i=1}^{\infty}P(X_{i}).
+ $$
+ \end{Definition}
+
+\begin{Definition}\textbf{(Messbarkeit)}
+ Sei $(\chi,\varUpsilon)$ messbarer Raum. Eine reellwertige Funktion $g: \chi \rightarrow \R$
+ heisst $\varUpsilon$-messbar (oder messbar) genau dann, wenn 
+ $$
+ \forall z \in \R: \textit{\{} x \in X | g(x) \leq z \textit{\}} \in \varUpsilon.
+ $$
+ \end{Definition}
+
+\begin{Definition}\textbf{(Zufallsvariable)}
+Sei $(\chi,\varUpsilon)$ messbarer Raum. Eine Zufallsvariable ist eine $\chi$-messbare reellwertige
+Funktion $f: \chi \rightarrow \R$.
+\end{Definition}
+
+Eine Zufallsvariable $Y = f(X)$ induziert also ein Maß $P_{Y}$ auf $\R$, für das die 
+$\sigma$-Algebra $A$ die Intervalle der Form {$(-\infty,z)|z \in \R$} enthält. Das Maß 
+$P_{Y}$ ist vom Maß $P_{X}$ und $f$ indzuiert. Das bedeutet
+
+$$
+\forall Y \in B_{1}: P_{Y}(Y) := P_{X}(\textit{\{} x \in X | f(x) \in Y \textit{\}}).
+$$
+
+\begin{Definition}\textbf{(Verteilungsfunktion und Dichte)}
+Für eine Zufallsvariable X heißt die durch 
+$$
+F_{X}(x) := P_{X}(X \leq x)
+$$
+definierte Funktion $F_{X}: \R \rightarrow [0,1]$ Verteilungsfunktion von $X$.
+Die Funktion $f_{X}: \R \rightarrow \R$ wird Dichte genannt, falls 
+$$
+\forall z \in \R: F_{X}(z) = \int_{x \leq z} f_{X}(x) dx. 
+$$
+\end{Definition}
+
+Für weitere Betrachtungen ist Erwartung einer Zufallsvariablen von essentieller Bedeutung. 
+
+\begin{Definition}\textbf{(Erwartungswert)}
+ Sei $f: \chi \rightarrow \R $ messbare Funktion. Der Erwartungswert $E_{X}[f(X)]$ von $f$
+ über die Wahrscheinlichkeit von x wird durch 
+ $$
+ E_{X}[f(X)] := \int_{\R}f(x)dF_{X}(x)
+ $$
+ definiert. Der Erwartungswert ist nur dann definiert, wenn $\int_{\R}|f(x)|dF_{X}(x) < \infty$.
+\end{Definition}
+
+\begin{Definition}\textbf{(Varianz)}
+ Die Varianz $Var(X)$ einer Zufallsvariable $X$ ist definiert durch 
+ $$
+ Var(X) := E_{X}[(X-\mu)^{2}] = E_{X}[X^{2}] - \mu^{2},
+ $$
+ wobei $\mu = E_{X}[X]$ der Erwartungswert der Zufallsvariable $X$ ist.  
+\end{Definition}
+
+\begin{Definition}\textbf{(Produktraum)}
+ Seien zwei Maßräume $(\chi,\varUpsilon)$ und $(\varphi,\Phi)$ gegeben. Definiere den 
+ Produktraum durch $(\chi \times \varphi,\varUpsilon \times \Phi)$. Hierbei bezeichnet
+ $\varUpsilon \times \Phi$ die kleinste $\sigma$-Algebra welche die Mengen $\textit{\{}X \times Y | X \in \varUpsilon, Y \in \Phi\textit{\}}$.
+ enthält.
+ \end{Definition}
+
+\begin{Definition}\textbf{(Marginal und bedingte Wahrscheinlichkeiten)}
+  Sei $(\chi \times \varphi,\varUpsilon \times \Phi, P_{XY})$ der Produktraum von $X$ und $Y$.
+  Das Marginalwahrscheinlichkeitsmaß $P_{X}$ ist dann durch 
+  $$
+  \forall X \in \varUpsilon: P_{X}(X) := P_{XY}(X \times \varphi)
+  $$
+  definiert.
+  Sei $Y \in \Phi$ und $P_{Y}(Y) > 0$, dann ist das bedingte Wahrscheinlichkeitsmaß $P_{X|Y \in Y}$ durch
+  $$
+  \forall Y \in \varUpsilon: P_{X|Y}(X) := \frac{P_{XY}(X \times Y)}{P_{Y}(Y)}
+  $$
+  gegeben.
+\end{Definition}
+
+\begin{Definition}\textbf{Unabhängigkeit}
+  Zwei Zufallsvariablen $X$ und $Y$ werden genau dann unabhängig genannt, wenn 
+  $$
+  \forall X \in \varUpsilon: \forall Y \in \Phi: P_{XY}(X \times Y) = P_{X}(X)P_{Y}(Y).
+  $$
+  In diesem Fall genügen die Marginalverteilungen um den gesamten Produktraum zu definieren.
+\end{Definition}
+  
+  Im Folgenden schreibe \textbf{X}, falls \textbf{X} eine Folge $(X_{1},...,X{n})$ von Zufallsvariablen
+  definiert. Eine solche Folge kann je nach Kontext entweder als Zeilen- oder als Spaltenvektor interpretiert 
+  werden. Ein Element des Universums $\chi^{n}$ wird dann durch ein n-Tupel \textbf{x} beschrieben.
+  Sei $\textbf{x} = (x_{1},...,x_{n})$ ein solches n-Tupel, dann verstehe $x \in \textbf{x}$
+  als $\exists i \in \textit{\{} 1,...,n \textit{\}}: x_{i} = x$. 
+
+\begin{Definition}\textbf{(Erwartungswert einer n-dimensionalen Zufallsvariable)}
+ Seien $\textbf{X} = (X_{1},...,X_{n})$ n Zufallsvariablen mit gemeinsamem Wahrscheinlichkeitsmaß $P_{X}$, 
+ dann ist die Erwartung $E_{\textbf{X}}[\textbf{X}]$ durch das n-Tupel
+ $$
+ E_{\textbf{X}}[\textbf{X}] = (E_{X_{1}}[X_{1}],...,E_{X_{n}}[X_{n}])
+ $$
+ gegeben.
+\end{Definition}
+
+\begin{Definition}\textbf{(Kovarianz und Konvarianzmatrix)}
+ Seien $X$ und $Y$ zwei Zufallsvariablen mit gemeinsamem Wahrscheinlichkeitsmaß $P_{XY}$,
+ dann ist die Kovarianz $Cov(X,Y)$ durch 
+ $$
+ Cov(X,Y) := E_{XY}[(X-\mu)(Y-\nu)]
+ $$
+ definiert, wobei $\mu = E_{X}[X]$ und $\nu = E_{Y}[Y]$. Es ist leicht einzusehemn,dass $Cov(X,X) = Var(X)$
+ Sei $\textbf{X} = (X_{1},...,X_{n})$ eine Folge von n Zufallsvariablen und $\textbf{Y} = (Y_{1},...,Y_{n})$
+ eine weitere solche Folge mit gemeinsamer Dichte $P_{XY}$, dann ist die $n \times m$ Kovarianzmatrix
+ \textbf{Cov(X,Y)} definiert durch
+ $$
+ \textbf{Cov(X,Y)} := 
+ \begin{pmatrix}
+  Cov(X_{1},Y_{1}) 	& ... 	& Cov(X_{1},Y_{m})  	\\
+  . 			& ... 	& .  			\\
+  . 			& ... 	& .			\\
+  . 			& ... 	& .		  	\\
+  Cov(X_{n},Y_{1}) 	& ...	& Cov(X_{n},Y_{m}) 
+ \end{pmatrix}
+ $$
+ Falls $\textbf{X} = \textbf{Y}$ $\textbf{Cov(X,X)} = \textbf{Cov(X)}$
+ \end{Definition}
+ 
+ \subsection{Eigenschaften von Zufallsvariablen}
+ 
+ \begin{Satz}\textbf{(Erwartungswert von Summen und Produkten)}
+  Seien $X$ und $Y$ zwei unabhängige Zufallsvariablen, so gilt
+  \begin{equation}
+  E_{XY}[X \cdot Y] = E_{X}[X] \cdot E_{Y}[Y], 
+  \end{equation}
+\begin{equation}
+  E_{XY}[X + Y] = E_{X}[X] + E_{Y}[Y], 
+  \end{equation}
+  immer dann, wenn die Terme auf der rechten Seite existieren. Die zweite Aussage gilt sogar, falls
+  $X$ und $Y$ nicht unabhängig sind. 
+ \end{Satz}
+
+ \begin{Satz}\textbf{(Linearität des Erwartungswertes)}
+  Für jede n-dimensionale Zufallsvariable $\textbf{X}$, jede Matrix $\textbf{A} \in \R^{m \times n}$
+  und jeden stationären Vektor $\textbf{b} \in \R^{m}$ gilt
+  $$
+  E_{X}[\textbf{AX} + \textbf{b}] = \textbf{A}E_{X}[\textbf{X} + \textbf{b}].
+  $$
+  \end{Satz}
+  
+  \begin{Satz}\textbf{Varianz Zerlegung}
+   Seien $X$ und $Y$ zwei unabhängige Zufallsvariablen, dann gilt 
+   $$
+   Var(X + Y) = Var(X) + Var(Y)
+   $$
+  \end{Satz}
+  \begin{Beweis}
+   Setze $\mu = E_{X}[X]$ und $\nu = E_{Y}[Y]$. Benutze die Definition der Varianz
+   $$
+   \begin{array}{c}
+     E_{XY}[(X+Y-E_{XY}[X+Y])^{2}] = E_{XY}[((X-\mu)(Y-\nu))^{2}] \\
+     = E_{XY}[(X-\mu)^{2}+ 2 \cdot (X-\mu)(Y-\nu) + (Y-\nu)^{2}]  \\
+     = E_{X}[(X-\mu)^{2}] + 2E_{XY}[(X-\mu)(Y-\nu)] + E_{Y}[(Y-\nu)^{2}] \\
+     = E_{X}[(X-\mu)^{2}] + 2E_{X}[(X-\mu)]E_{Y}[(Y-\nu)] + E_{Y}[(Y-\nu)^{2}] \\
+     = Var(X) + Var(Y)
+   \end{array}
+   $$
+  \end{Beweis}
+
+  \begin{Lemma}
+   Für jede Zufallsvariable $X$ und jede Konstant $c \in \R$ gilt \\ 
+   $Var(cX) = c^{2} \cdot Var(X)$.
+  \end{Lemma}
+
+\subsection{Mehrdimensionale Gauß Verteilung}
+
+In diesem Abschnitt werden einige der wichtigsten Eigenschaften der Gaussverteilung zusammengefasst.
+
+\begin{Definition} Sei $\mu \in \R^n$ ein Vektor und $A \in \R^{nxm}$ eine deterministische Matrix. 
+Sei weiter $ Y = (Y_{1},...,Y_{m})$ eine Folge von m unabhängigen, normalverteilten Zufallsvariablen
+$Y_{i}$ mit Mittewert Null und Einheitsvarianz ($Y_{i} \sim Normal(0,1)$). Dann wird $X = AY + \mu$ normal-
+oder gaußverteilt mit Erwartungswert $E_{X}[X] = \mu$ und Kovarianzmatrix $Cov(X) = \varSigma = AA^{'}$ genannt.
+Da das Maß $P_{X}$ eindeutig durch diese beiden Größen beschrieben wird schreiben wir im Weiteren auch $Y \sim Normal(\mu , \varSigma)$.
+\end{Definition}
+
+\begin{Satz} Falls $X \sim Normal(\mu,\varSigma)$, dann besitzt $X$ genau dann eine Dichte $f_X$, wenn 
+$\varSigma$ positiv definit ist. Die Dichte $f_{X}$ ist gegeben durch 
+\begin{equation}
+f_{X}(x) = \frac{1}{(2\pi)^{n/2}|\varSigma|^{\frac{1}{2}}}\exp(-\frac{1}{2}(x-\mu)^{T}\varSigma^{-1}(x-\mu)) 
+\end{equation}
+
+\end{Satz}
+
+\begin{Satz}
+ Sei $X \sim Normal(\mu,\varSigma)$ eine n-dimensional normalverteilte Zufallsvariable,
+ $A \in R^{mxn}$ stationäre Matrix und $b \in \R^m$ stationärer Vektor. Dann ist auch die Zufallsvariable 
+ $Y = AX + b$ normalverteilt mit $Y \sim Normal(A\mu + b, A\varSigma A^{T})$.
+\end{Satz}
+
+\begin{Satz}
+ Angenommen $P_{X|Y=y}=Normal(Xy,\Gamma)$ ist normalverteiltes Wahrscheinlichkeitsmaß, wobei 
+ $X \in \R^{mxn}$ und $\Gamma \in \R^{mxm}$ stationäre Matrizen für alle Werte $y \in \R^{n}$ sind. Falls
+ $P_{Y} = Normal(\mu,\varSigma)$ normalverteiltes Wahrscheinlichkeitsmaß ist, so gilt
+ 
+ \begin{equation}
+ P_{Y|X=x} = Normal(\Psi(X^{T}\Gamma^{-1}x+\varSigma^{-1}\mu),\Psi).
+ \end{equation}
+ \begin{equation}
+  P_{X} = Normal(X\mu,\Gamma+X\varSigma X^{T}).
+ \end{equation}
+ ,wobei $\Psi = (X^{T}\Gamma^{-1}X+\varSigma^{-1})^{-1}$
+\end{Satz}
+
+\begin{Beweis}
+ Nach Satz () wissen wir, dass 
+$$
+  f_{Y|X=x(y)} = \frac{f_{X|Y=y}f_{Y}(y)}{\int_{\R^n}f_{X|Y=y^{'}(x)}f_{Y}(y^{'})dy^{'}} 
+ = \frac{f_{X|Y=y}(x)f_{Y}(y)}{f_{X}(x)}.
+$$
+
+ Es fällt auf, dass der Nenner unabhängig von $y$ ist. Betrachte nun deshalb zunächst den Zähler.
+ Mithilfe von Definition ist Letzteres gegeben durch 
+ $$ 
+ c\cdot exp(-\frac{1}{2}((x-Xy)^{T}\Gamma^{-1}(x-Xy)+(y-\mu)^{T}\varSigma^{-1}(y-\mu))),
+ $$
+
+ 
+ wobei $c = (2\pi)^{\frac{-m+n}{2}}|\Gamma|^{-\frac{1}{2}}|\Gamma|^{-\frac{1}{2}}$ unabhängig von 
+ $x$ und $y$ ist.
+ Diesen Ausdruck wiederum können wir umschreiben als 
+ 
+ $$
+ c \cdot exp(-\frac{1}{2}((y-x)^{T}C(y-c)+d(x))), 
+ $$
+ mit 
+ 
+ $$
+ C = X^{T}\Gamma^{-1}X+\varSigma^{-1},
+ $$
+ 
+ $$
+ Cc = X^{T}\Gamma^{-1}X+\varSigma^{-1}\mu,
+ $$
+ 
+ $$
+ d(x) = (x-X\mu)^{T}(\Gamma+X\varSigma X^{T})^{-1}(x-X\mu).
+ $$
+ 
+ Da $d(x)$ als Funktion nicht von $y$ abhängt, kann der Term $exp(-\frac{1}{2}d(x))$ mit in die
+ Konstante c gezogen werden und somit folgt die erste Gleichung des Satzes indem $\Psi:=C^{-1}$
+ gesetzt wird.\\
+ Um die Zweite Aussage zu zeigen kann die Definition von $f_{X}(x)$ benutzt werden, d.h,
+ 
+ $$
+ \begin{array}{c}
+  f_{X}(x) = \int_{\R^{n}}c \cdot exp(-\frac{1}{2}((y^{'}-c)^{T}C(y^{'}-c)+d(x))dy^{'} \\
+ = c \cdot exp(-\frac{1}{2}d(x)) \cdot \int_{\R^{n}}exp(-\frac{1}{2}((y^{'}-c)^{T}C(y^{'}-c))dy^{'}\\
+ = c \cdot exp(-\frac{1}{2}d(x)) \cdot (2\pi)^{\frac{n}{2}}|C|^\frac{1}{2} = c^{'} \cdot exp(-\frac{1}{2}d(x))\\
+ = c^{'} \cdot exp(-\frac{1}{2}(x-X\mu)^{T}(\Gamma+X\varSigma X^T)^{-1}(x-X\mu)),
+ \end{array}
+ $$
+ wobei die dritte Zeile aus der Definition und der Tatsache folgt, dass sich Wahrscheinlichkeitsdichten
+ zu Einer zusammenfassen lassen. Dies zeigt die zweite Aussage. 
+\end{Beweis}
+
+
    
-   In dieser Phase sind wir daran interessiert, die Wahrscheinlichkeit eines bestimmten Spielausganges $\mathbf{r}$ vorherzusagen, falls die Skills $\mathbf{\mu}$ und die
-   Standardabweichungen $\mathbf{\sigma}$ der Spieler bekannt sind. Dazu müssen wir $P(\mathbf{y})$ aus $P(\mathbf{y}|s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k)$ wo alle Ungewissheiten
-   über die Skills $s_{\mathbf{i}}_1,...,s_{\mathbf{i}}_k$ ausmarginalisiert werden. Der Algorithmus ergibt sich leicht aus den in Kapitel () und () vorgestellten Methoden.
+
+
 
 
   % Literaturverzeichnis (beginnt auf einer ungeraden Seite)
