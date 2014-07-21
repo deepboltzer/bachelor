@@ -384,7 +384,7 @@ Unsicherheiten werden durch eine Approximierung des message passing in faktorgra
   müssen diese in eine solche Form gebracht werden. 
   
   \begin{equation}
-   \pi^{new} = \frac{1}{\sigma^2} = \frac{1}{\sum_{j=1}^{n} a_j^2 \sigma_j^2 = (\sum_{j=1}^n \frac{a_j^2}{\pi_j})^{-1}
+   \pi^{new} = \frac{1}{\sigma^2} = \frac{1}{\sum_{j=1}^{n} a_j^2 \sigma_j^2} = (\sum_{j=1}^n \frac{a_j^2}{\pi_j})^{-1}
   \end{equation}
 
   Für den precision mean müssen wir den $\pi^{new}$ mit mit dem Erwartungswert multiplizieren: 
@@ -393,10 +393,75 @@ Unsicherheiten werden durch eine Approximierung des message passing in faktorgra
    \tau^{new} = \pi^{new} \cdot \mu = \pi^{new} \cdot (\sum_{j=1}^n a_j \mu_j).
   \end{equation}
 
+  Mit $\mu = \frac{\tau}{\pi}$ können wir $\tau^{new}$ als
   
+  \begin{equation}
+   \tau^{new} = \pi^{new} \cdot (\sum_{j=1}^n a_j \mu_j) = \pi^{new} \cdot(\sum_{j=1}^n a_j \frac{\tau_j}{\pi_j})
+  \end{equation}
+  
+  schreiben. Stellen wir jetzt die Terme in () nach $v_1$ um, so ergibt sich
+  
+  \begin{equation}
+   \begin{split}
+   v_1 &= - \frac{a_2}{a_1} - ...- \frac{a_{n-1}}{a_1} v_{n-1} - \frac{a_n}{a_1} v_n + \frac{1}{a_1}v_0. \\
+   &= v_1 = \frac{1}{a_1}( a_2v_2 -...-a_nv_n + v_0). \\
+    \end{split}
+  \end{equation}
 
+  So kann auch für alle anderen Variablen $v_2,...,v_n$ verfahren werden. Dies bedeutet in Vektorschreibweise
+  
+  \begin{equation}
+   y_n = \mathbf{a}^T [y_1,...,y_{n-1},x],
+  \end{equation}
+
+  wobei 
+  \begin{equation}
+	  a = \frac{1}{b_n} \cdot [-b_1 ... -b_{n-1} +1]^T.
+  \end{equation}
+
+  Dies ist die kompakte, von Herbrich in ... vorgestellte Notation.
+
+  \subsubsection{Gaussche Vergleichsfaktoren}
+  
+  Die Vergleichsfaktoren wurden im Artikel ... in zwei Versionen dargestellt. Für Spiele bei denen Unentschieden vorkommen können und für solche ohne. 
+  Der untere Teil des Trueskill Faktorgraphen besteht aus Vergleichsfaktoren, welche von dem aktuellen Spielausgang abhängen. 
+  Diese Faktoren machen sich zwei Funktionen $v$ und $w$ zu Nutze. Diese beiden Funktionen entsprechen den additiven und multiplikativen Korrekturfunktionen der abgeschnittenen 
+  Gaußverteilung aus Kapitel (). Die Hauptidee hinter diesen Funktionen ist es, dass wir eine dreidimensionale Gaußverteilung bestehend
+  aus den Leistungen der beiden zu vergleichenden Teams haben und diese Abschneiden, indem wir den Teil des verlierenden Teams auf Null setzten. 
+  Diese Prozess liefert uns eine abgeschnittene Gaußverteilung, welche wir zum Beispiel mit dem Expectation Propagation Algorithmus oder durch numerische Integration 
+  approximieren können. 
+  Die erste Funktion, die wir dabei betrachten ist $v$. Diese hilft im Algorithmus dabei zu steuern wie stark die Erwartung im Falle eines Sieges oder einer 
+  Niederlage aktualisiert werden sollen,
+  
+  \begin{equation}
+   \begin{split}
+   \mu_{winner} &\leftarrow \mu_{winner} + \frac{\sigma_{winner}^2}{c} \cdot v (\frac{(\mu_{winner} - \mu_{loser})}{c}, \frac{\epsilon}{c}) \\
+   \mu_{loser} &\leftarrow \mu_{loser} - \frac{ \sigma_{loser} }{c} \cdot v(\frac{(\mu_{winner} - \mu_{loser})}{c}, \frac{\epsilon}{c}) \\
+  \end{split}
+  \end{equation}
+ 
+  Hier möchten wir nocheinmal etwas genauer auf die anschauliche Bedeutung der Korrekturfuntionen eingehen. 
+  Betrachten wir zunächst die additive Korrekturfunktion für Spiele ohne Unentschieden. 
+  Mit
+  
+  \begin{equation}
+   t = \frac{ (\mu_{winner} - \mu_{loser}) }{c}
+  \end{equation}
+
+  sehen wir, dass ein negatives $t$ bedeutet, dass der Erwartungswert des Gewinners vor dem Spiel kleiner war, als der Erwartungswert des Verlierers. 
+  Dies bedeutet, dass wir ein vergleichsweise großes Update der Erwartung machen müssen, da der Algorithmus in seiner Vermutung vor dem Spiel falsch lag. 
+  Umgekehrt bedeutet ein positives $t$, dass das Spiel so ausgegangen ist, wie es vom Algorithmus erwartet wurde. Es ist also nur ein kleines Update notwendig. \\
+  
+  Für Spiele mit Unentschieden sehen wir, dass der Graph der additiven Korrekturfunktion eine starke Schwankung hat, sobald das System erwartet, dass ein stärkerer Spieler
+  gegen einen schwächeren gewinnen wird, das Spiel jedoch unentschieden ausgeht. Falls die Wahrscheinlichkeit eines Unentschiedens gering ist, so ist dieses Update größer, da
+  die Wahrscheinlichkeit des beobachteten Spielausgangs vom System als unerwartet eingestuft wurde. \\
+  
+  Betrachten wir nun die multiplikative Korrekturfunktion in ihrer Version für Spiele ohne Unentschieden, so stellen wir fest, dass das System die Standardabweichung eines Spielers
+  dann verringert, wenn ein unerwarteter Spielausgang eintritt. In seiner Formulierung für Spiele mit Unentschieden ist die multiplikative Korrekturfunktion meist symmetrisch zur Differenz
+  der Erwartungen. Das kleinste Update tritt dann auf, wenn das System erwartet, dass das Spiel unentschieden ausgeht. \\
+  
    
-   \subsection{Multiple Team Games Algorithms}
+   \subsection{Mehrteam Algorithmen}
    
    In diesem Abschnitt beschreiben wir die Funktionsweise von Update Algorithmen für Spiele, in denen mehrere 
    Teams gegeineinander antreten. 

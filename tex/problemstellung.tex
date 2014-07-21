@@ -75,6 +75,46 @@ Im Allgemeinen ergeben sich
  \end{equation}
 gegeben sind. 
 
+\subsection{EP Algorithmus für die Gaußverteilung}
+
+Wie bereits im letzen Abschnitt nehmen wir an, dass wir einen Gaußverteilten Parameter $\Theta$ mit 
+$?(\Theta) = \mathcal{N}(\Theta; ßmu, \varSigma)$ und einen Likelyhood $P(\mathbf{x}|\Theta)$ in m Faktoren gegeben haben,
+sodass 
+
+\begin{equation}
+ P(\mathbf{x}|\Theta) = \prod_{i=1}^m t_{i,\mathbf{x}}(\Theta)
+\end{equation}
+
+Dann ist die Wahrscheinlichkeit $P(\varTheta|x)$ nicht zwingend länger gaußverteilt, 
+
+\begin{equation}
+  P(\varTheta|x) = \frac{t_x(\varTheta)P(\varTheta)}{\int t_x(\varTheta^{'})P(\varTheta^{'})d\varTheta^{'}}
+\end{equation}
+
+Wir können sogar nicht einmal mithilfe der KL-Divergenz die beste Approximation für den wirklichen Posterior finden, 
+da wir die Ableitungen der aus Summen und Produkten bestehenden Normalisierungskonstante $Z_x$ nicht effektiv
+berechnen können (\textit{Fluch der Dimension}). Wir wollen deshalb den Ansatz wählen die Faktoren 
+$t_{i,x}$ nacheinander in den Posterior einbauen. Dieses Verfahren ist als \textit{Expectation Propagation} bekannt. 
+Für Details möchten wir auf Kapitel () verweisen. 
+
+\subsubsection{Das Modell}
+
+Wir nehmen an, dass der i-te Faktor des Likelyhoods Funktion einer niedrig-dimensionalen Projektion von $\Theta$ ist. 
+Dann können wir die folgenden $m$ Funktionen $f_i$ statt den $m$ Faktoren $t_{i,x}$ verwenden:
+
+\begin{equation}
+ f_i(\Theta) := s_i exp(- \frac{1}{2} (\mathbf{A_i^T \Theta - \mu_i}) \Pi (\mathbf{A_i^T \Theta - \mu_i})).
+\end{equation}
+
+Dazu definieren wir $f_0(\Theta) := \mathcal{N}(\Theta; \mu; \varSigma)$. Die Approximation $P'(\Theta,x)$, des Posteriors, $P(\Theta,x)$ hat dann
+die gleiche funktionale Form, 
+
+\begin{equation}
+ P'(\Theta,x) = \frac{ \prod_{i=0}^m f_i(\Theta)}{ \int \prod_{i=0}^m f_i(\Theta') d \Theta' } = \mathcal{N}(\Theta; \mu', \varSigma').
+\end{equation}
+
+
+
 \subsection{Multidimensional korrigiert und abgeschnittene Gaußverteilung}
 Wir nennen x korrigiert und abgeschnitten gaußverteilt, wenn $\mathbf{x} \sim \mathcal{R}(\mathbf{x};\mathbf{\mu},\mathbf{\varSigma}^2,\mathbf{\alpha},\mathbf{\beta})$ und dies bedeutet, dass die Dichte von $\mathbf{x}$ durch 
 
