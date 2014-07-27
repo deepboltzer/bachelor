@@ -21,6 +21,7 @@
 % Abstand obere Blattkante zur Kopfzeile ist 2.54cm - 15mm
 \setlength{\topmargin}{-15mm}
 
+\parindent0pt 
 
 % Umgebungen für Definitionen, Sätze, usw.
 % Es werden Sätze, Definitionen etc innerhalb einer Section mit
@@ -338,7 +339,7 @@ Da der erste und der zweite Ausdruck die Gleichheit erfüllen müssen, schließe
 
 \begin{equation}
 \begin{split}
- \frac{\partial^2 \left (  \Phi \left (\frac{u- \mu}{\sigma} \right )\right - \Phi \left ( \frac{l- \mu}{\sigma} \right ) )}{\partial \mu^2} &= \int_l^u \frac{\partial \left ( \frac{x - \mu}{\sigma^2} \right ) \cdot \mathcal{N}(x; \mu, \sigma^2)}{\partial \mu} dx \\
+ \frac{\partial^2 \left (  \Phi \left ( \frac{u- \mu}{\sigma} \right ) - \Phi \left ( \frac{l- \mu}{\sigma} \right ) \right)}{\partial \mu^2} &= \int_l^u \frac{\partial \left ( \frac{x - \mu}{\sigma^2} \right ) \cdot \mathcal{N}(x; \mu, \sigma^2 )}{\partial \mu} dx \\
  &= \sigma^{-4} \left < (x - \mu)^2 - \sigma^2 \right >_{x \sim \mathcal{R}} . \\
 \end{split}
 \end{equation}
@@ -347,8 +348,8 @@ Gleichzeitig gilt
 
 \begin{equation}
 \begin{split}
-\frac{\partial^2 \left ( \Phi \left ( \frac{u- \mu}{\sigma} ) \right - \Phi \left ( \frac{u- \mu}{\sigma} ) \right \right )}{\partial \mu^2} &= \frac{\partial \left ( \mathcal{N}(\mu; l, \sigma^2) - \mathcal{N}(\mu;u, \sigma^2) \right ) }{\partial \mu} \\
-&= \sigma^{-2} \left [ (\mu - u) \mathcal{N}(\mu;u, \sigma^2) \right]. \\
+\frac{ \partial^2 \left ( \Phi \left ( \frac{u- \mu}{\sigma} \right )  - \Phi \left ( \frac{u- \mu}{\sigma} \right )  \right )}{ \partial \mu^2} &= \frac{ \partial \left ( \mathcal{N}(\mu; l, \sigma^2) - \mathcal{N}(\mu;u, \sigma^2) \right ) }{ \partial \mu} \\
+&= \sigma^{-2} \left [ (\mu - u) \mathcal{N}(\mu;u, \sigma^2) \right ] . \\
 \end{split}
 \end{equation}
 
@@ -405,7 +406,7 @@ Dabei gilt
 \begin{equation}
  \begin{split}
   \frac{\partial \log{Z_i}}{\partial \mathbf{\mu}} &= \alpha_i(\mathbf{\mu, \varSigma}) \cdot \mathbf{a_i} \\
-  \left [ \frac{\partial \log{Z_i} }{\parial \mathbf{\mu}} \right ] \left [ \frac{\partial \log{Z_i}}{\partial \mathbf{\mu}}\right ]^T - 2 \cdot \frac{\partial \log(Z_i)}{\partial \mathbf{\varSigma}} &= \gamma_i(\mathbf{\mu, \varSigma}) \cdot \mathbf{a_i a_i^T}.
+  \left [ \frac{\partial \log{Z_i} }{\partial \mathbf{\mu}} \right ] \left [ \frac{\partial \log{Z_i}}{\partial \mathbf{\mu}}\right ]^T - 2 \cdot \frac{\partial \log(Z_i)}{\partial \mathbf{\varSigma}} &= \gamma_i(\mathbf{\mu, \varSigma}) \cdot \mathbf{a_i a_i^T}.
  \end{split}
 \end{equation}
 
@@ -526,4 +527,220 @@ von $\mathbf{w}$ ist. Diese Darstellung erlaubt die direkte Anwendung von mehrdi
 Auch ist an Gleichung (1.12) zu erkennen, dass sich das Integrationsproblem um eine Dimension
 reduziert hat, da die rechte Seite der Gleichung nicht von $w_n$ abhängt und diese Variable daher
 herausintegriert werden kann.
+ 
+
+\subsection{Update Formeln für Zwei-Team-Spiele}
+
+In diesem Kapitel werden wir die Update Formeln für Zwei-Team-Spiele. Wie im Kapitel () beschrieben, benötigen wir
+zunächst die Normalisierungskonstante $Z_y$ als Funktion in Abhängigkeit von $\mathbf{\mu} \text{ und } \mathbf{\varSigma}$ für 
+die drei möglichen Spielausgänge $y \in \{ -1,0, +1 \}$ (Niederlage, Unentschieden, Sieg). \\
+Wir gehen davon aus, dass die Leistungen $\mathbf{x}$ der Spieler gaußverteilt sind, $\mathbf{x} \sim \mathcal{N}(\mathbf{x;s, \beta^2 I})$.
+Der Likelyhood $P(y|s)$ kann dann als Ausdruck in Abhängigkeit von $z = \mathbf{a^T x}$ geschrieben werden. Aufgrund der Eigenschaften 
+der Normalverteilung ist dieser ebenfalls normalverteilt mit $z \sim \mathbf{N}(z;\mathbf{a^T s, \beta^2 a^T a})$: 
+
+\begin{equation}
+ P(y|\mathbf{s}) = \begin{cases}
+                     \Phi(- \epsilon; \mathbf{a^Ts, \beta^2 a^T a}), & \mbox{if } y = -1 \\
+                     \Phi(\epsilon; \mathbf{a^Ts, \beta^2 a^T a}), & \mbox{if } y = 0 \\
+                     1- \Phi(\epsilon; \mathbf{a^Ts, \beta^2 a^T a}), & \mbox{if } y = +1 \\
+                   \end{cases}
+\end{equation}
+
+Der Likelyhood ist eine lineare Funktion von $\Theta$, ausgewertet entweder an $\epsilon \text{ oder } - \epsilon$. Es gilt
+
+\begin{equation}
+\begin{split}
+ \left < \Phi \left ( \epsilon; \mathbf{a^T s, \beta^2 a^T a} \right )\right > &= \int_{- \infty}^{\infty} \int_{-\infty}^{\epsilon} \mathcal{N}(z; \mathbf{a^T s , \beta^2 a^T a}) \mathcal{N}(\mathbf{s; \mu, \varSigma})dz d \mathbf{s} \\
+ &= \int_{- \infty}^{\epsilon} \left [ \int_{-\infty}^{\infty} \mathcal{N}(z; \mathbf{a^T s , \beta^2 a^T a}) \mathcal{N}(\mathbf{s; \mu, \varSigma}) d \mathbf{s} \right ] dz \\
+ &= \int_{- \infty}^{\epsilon} \mathbf{N} \left ( z; \mathbf{a^T \mu, a^T(\beta^2 I + \varSigma) a} \right ) dz \\
+ &= \Phi \left( \frac{\epsilon - \mathbf{a^T \mu}}{ \sqrt{\mathbf{a^T(\beta^2 I + \varSigma) a}} } \right).
+ \end{split}
+ \end{equation}
+
+Damit erhalten wir für die Normalisierungskonstante $Z_y = P(y) = \int P(y| \mathbf{s}) P(\mathbf{s}) d \mathbf{s}$ des Likelyhoods in ()
+
+\begin{equation}
+ Z_y(\mathbf{\mu, \varSigma}) = \begin{cases}
+                                 \Phi( \frac{- \epsilon + y \mathbf{a^T \mu}}{\sqrt{\mathbf{a^T (\beta^2 I + \varSigma) a}}} ) & \mbox{if } y \in \{ -1, +1 \} \\
+                                 \Phi( \frac{ \epsilon - y \mathbf{a^T \mu}}{\sqrt{\mathbf{a^T (\beta^2 I + \varSigma) a}}} ) - \Phi( \frac{- \epsilon - y \mathbf{a^T \mu}}{\sqrt{\mathbf{a^T (\beta^2 I + \varSigma) a}}}) & \mbox{ if } y = 0 \\
+                                \end{cases}
+\end{equation}
+
+Dazu haben wir die Eigenschaft $\Phi(t) = 1 - \Phi(-t)$ benutzt. Es wird sich als nützlich erweisen die Variablen 
+
+\begin{equation}
+ u_y(\mathbf{\mu}) := y \cdot \mathbf{a^T \mu}, \text{		} c(\mathbf{\varSigma}) := \mathbf{a^T} (\beta^2 \mathbf{I} + \mathbf{\varSigma}) \mathbf{a}.
+\end{equation}
+
+einzuführen. 
+
+Wir im Folgenden die beiden Spielausgänge $y \in \{ -1,1 \}$ zusammen und dann den Fall $y = 0$ einzeln betrachten. Wir nehmen außerdem an, dass die Kovarianz der Prior und Posterior Verteilung
+Diagonalmatrix sind.  \\
+
+\textbf{Niederlage oder Gewinn } \\
+Wir benutzen die in () eingeführten Kurznotationen und sehen, dass 
+
+\begin{equation}
+ Z_y(\mathbf{\mu, \varSigma}) = \Phi \left( \frac{u_y(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ).
+\end{equation}
+
+Entwickeln wir die Ableitungen des Logarithmus dieser Funktion nach $\mathbf{\mu}$ und $\mathbf{\varSigma}$ so erhalten wir 
+
+\begin{equation}
+ \begin{split}
+  g_i &= \frac{y \cdot a_i}{\sqrt{c(\mathbf{\varSigma})}} \cdot v \left ( \frac{u_y(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right )  , \\
+  G_{i,j} &= - \frac{a_i a_j}{2 c(\varSigma)} \cdot \left ( \frac{u_y(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right ) \cdot \frac{u_y(\mathbf{\mu}) - \epsilon}{\sqrt{c(\mathbf{\varSigma})}}.
+ \end{split}
+\end{equation}
+
+Nutzen wir aus, dass $\mathbf{\varSigma} = diag(\mathbf{\sigma^2})$, so erhalten wir für die aktualisierte Erwartung und die aktualisierte Varianz
+
+\begin{equation}
+\begin{split}
+ \hat \mu_i &= \mu_i + y \cdot v \frac{a_i \sigma_i^2}{\sqrt{c(\mathbf{\varSigma})}} \cdot v \left ( \frac{u_y(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right ) \\
+ \hat \sigma_i^2 &= \sigma_i^2 \cdot \left ( 1 - \frac{a_i^2 \sigma_i^2}{c(\mathbf{\varSigma})} \cdot w \left ( \frac{u_y(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right )  \right ) \\
+ \end{split}
+ \end{equation}
+
+\textbf{Unentschieden	} \\
+Wir benutzen wiederum die Kurznotationen aus (). Damit ergibt sich für $Z_0(\mathbf{\mu}, \mathbf{\varSigma})$
+
+\begin{equation}
+ Z_0(\mathbf{\mu}, \mathbf{\varSigma}) = 1 - \Phi \left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) - \Phi \left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ).
+\end{equation}
+
+Entwickeln wir die Ableitungen des Logarithmus dieser Funktion nach $\mathbf{\mu}$ und $\mathbf{\varSigma}$ so erhalten wir 
+
+\begin{equation}
+ \begin{split}
+   g_i &= - \frac{a_i}{c(\mathbf{\varSigma})} \cdot \frac{ \mathcal{N}\left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) - \mathcal{N}\left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) }{1 - \Phi \left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) - \Phi \left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right )}, \\  
+   G_{i,j} &= \frac{a_i a_j}{2c \mathbf{\varSigma}} \cdot \frac{ \mathcal{N}\left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) \cdot \left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) - \mathcal{N}\left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) \cdot \left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right )}{1 - \Phi \left( \frac{u_{-1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right ) - \Phi \left( \frac{u_{+1}(\mathbf{\mu}- \epsilon)}{\sqrt{c (\mathbf{\varSigma})}} \right )}, \\ 
+ \end{split}
+\end{equation}
+
+Wir führen zwei Funktionen $\tilde v(t, \epsilon) := v(t, - \epsilon, \epsilon), \text{ 	} \tilde w(t, \epsilon) := w(t, - \epsilon, \epsilon) .$
+ 
+Nutzen wir aus, dass $\mathbf{\varSigma} = diag(\mathbf{\sigma^2})$ und die Symmetrie der Funktionen $\tilde v$ und $\tilde w$, so erhalten wir für die aktualisierte Erwartung und die aktualisierte Varianz
+ 
+\begin{equation}
+\begin{split}
+ \hat \mu_i &= \mu_i + \frac{a_i \sigma_i^2}{\sqrt{c(\mathbf{\varSigma})}} \cdot \tilde v \frac{a_i \sigma_i^2}{\sqrt{c(\mathbf{\varSigma})}} \cdot v \left ( \frac{u_{+1}(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right ) \\
+ \hat \sigma_i^2 &= \sigma_i^2 \cdot \left ( 1 - \frac{a_i^2 \sigma_i^2}{c(\mathbf{\varSigma})} \cdot \tilde w \left ( \frac{u_{+1}(\mathbf{\mu})}{\sqrt{c(\mathbf{\varSigma})}}, \frac{\epsilon}{\sqrt{c(\mathbf{\varSigma})}}  \right )  \right ). \\
+ \end{split}
+ \end{equation}
+ 
+\subsection{Update Formeln für Mehrteam-Spiele	}
+ 
+In diesem Kapitel entwickeln wir die Update Formeln für Mehrteam-Spiele. Wie im Kapitel () beschrieben, benötigen wir
+zunächst die Normalisierungskonstante $Z_y$ als Funktion in Abhängigkeit von $\mathbf{\mu} \text{ und } \mathbf{\varSigma}$ für jeden möglichen Spielausgang
+$\mathbf{r} \in \{ 1,...,n \}^k$. 
+
+Wir gehen davon aus, dass die Leistungen $\mathbf{x}$ der Spieler gaußverteilt sind, $\mathbf{x} \sim \mathcal{N}(\mathbf{x;s, \beta^2 I})$.
+Der Likelyhood $P(y|s)$ kann dann als Ausdruck in Abhängigkeit von $z = \mathbf{a^T x}$ geschrieben werden. Aufgrund der Eigenschaften 
+der Normalverteilung ist dieser ebenfalls normalverteilt mit $z \sim \mathbf{N}(z;\mathbf{A^T s, \beta^2 A^T A})$. Führen wir einen weiteren Vektor $\mathbf{y}$ ein, s.d. 
+$y_j = 1$, falls das $j$-te Paar Teams auf benachbarten Platzierungen liegt und $y_j = 0$, falls das $j$-te Paar Teams das Spiel auf dem gleichen Rang beendet, so erhalten wir
+
+\begin{equation}
+ P(\mathbf{r|s}) := P \left ( \bigwedge_j (z_j \in I_{y_j})  \right ) = P(\mathbf{z} \in I_{\mathbf{y}}).
+\end{equation}
+
+Dabei sei $I_0 := (- \epsilon,\epsilon), I_1 := (\epsilon,+ \infty)$ und $I_{\mathbf{y}} = I_{y_1} \times I_{y_2} \times \cdots$. Für die Normalisierungskonstante $Z_{\mathbf{r}} = P(\mathbf{r}) = \int_{- \infty}^{+ \infty} P(\mathbf{r}|\mathbf{s}) P(\mathbf{s}) d \mathbf{s}$ wissen wir
+
+\begin{equation}
+\begin{split}
+ Z_{\mathbf{r}}(\mathbf{\mu}, \mathbf{\varSigma}) &= \int_{- \infty}^{\infty} \int_{I_y} \mathcal{N}(\mathbf{z;A^Ts; \beta^2 A^T A}) \mathcal{N}(\mathbf{s;\mu,\varSigma}) d \mathbf{z} d \mathbf{s} \\
+ &= \int_{I_y} \left [ \int_{- \infty}^{\infty} \mathcal{N}(\mathbf{z;A^Ts; \beta^2 A^T A}) \mathcal{N}(\mathbf{s;\mu,\varSigma}) d \mathbf{z} \right ] d \mathbf{s} \\
+ &= \int_{I_y} \mathcal{N}(\mathbf{z; A^T \mu; A^T (\beta^2 I + \varSigma) A}) d \mathbf{z}.
+ \end{split}
+ \end{equation}
+
+Um die Notation zu verkürzen führen wir die Funktionen 
+
+\begin{equation}
+ \mathbf{u(y) := A^T \mu} \text{ und 	} \mathbf{C(\varSigma) := A^T (\beta^2 I + \varSigma) A}
+\end{equation}
+
+ein. \\ 
+
+\textbf{Update Formeln für den Erwartungswert} \\
+
+Für das GDF Update für $\mathbf{\mu}$ müssen wir $\mathbf{g} := \frac{ \partial \log{Z_r(\mathbf{\mu,\varSigma})}}{\partial \mathbf{\mu}}$ berechnen. Mit den Ergebnissen aus 
+dem vorherigen Kapitel erhalten wir:
+
+\begin{equation}
+ \begin{split}
+ \mathbf{g} &= \frac{1}{Z_r(\mathbf{\mu, \varSigma})} \int_{I_y} \frac{\partial \mathcal{N}(\mathbf{z;u(\mu); C(\varSigma)})}{\partial \mathbf{\mu}} d \mathbf{z} \\
+ &= \int_{I_y} \frac{\partial \mathcal{N}(\mathbf{z;u(\mu); C(\varSigma)})}{Z_r(\mathbf{\mu, \varSigma})} \cdot \frac{\partial - \frac{1}{2} (\mathbf{z-u(\mu)})^T \cdot \mathbf{C^{-1}(\varSigma) \cdot (\mathbf{z-u(\mu)})}}{\partial \mu} d \mathbf{z} \\
+ &= \int_{I_y} \frac{\partial \mathcal{N}(\mathbf{z;u(\mu); C(\varSigma)})}{Z_r(\mathbf{\mu, \varSigma})} \cdot (\mathbf{A \cdot C^{-1}(\varSigma) \cdot z - A \cdot C^{-1}(\varSigma) \cdot u(\mu)}) d \mathbf{z}. \\
+ \end{split}
+\end{equation}
+
+Da $I_y$ einen Hyperwürfel darstellt, können wir den Ausdruck verkürzt schreiben: 
+
+\begin{equation}
+\begin{split}
+ \mathbf{g} &= \left < A \cdot C^{-1}(\varSigma) \cdot z \right >_{z \sim \mathcal{R}(\mathbf{z;u(\mu), C(\varSigma), I_y})} - \mathbf{A \cdot C^{-1}(\varSigma) \cdot u(\mu)} \\
+ &= \mathbf{A \cdot C^{-1}(\varSigma) \cdot \left( \left <z \right >_{z \sim \mathcal{R}(\mathbf{z;u(\mu), C(\varSigma), I_y})} - \mathbf{u(\mu)} \right )} d \mathbf{z}.
+\end{split}
+ \end{equation}
+
+ Wenden wir auf diesen Ausdruck das GDF Update an und nutzen wir die Diagonalität der Kovarianzmatrix $\mathbf{\varSigma}$ aus, so ergibt sich für die aktualisierte Erwartung: 
+ 
+ \begin{equation}
+  \hat \mu_i = \mu_i + \sigma_i^2 \mathbf{e_i^T A \cdot C^{-1}(\varSigma) \cdot \left ( \left < z \right >_{z \sim \mathcal{R}(\mathbf{z;u(\mu), C(\varSigma), I_y})} - u(\mu)  \right )}
+ \end{equation}
+
+ Im Fall von $k = 2$ Teams reduzieren sich diese Gleichungen zu den Gleichungen im vorherigen Kapitel für $y \in \{ 0,1 \}$, da $\mathbf{C(\varSigma) = c(\varSigma) \text{ und } u(\mu)} = u(\mu)$. 
+ Es gilt dann 
+ 
+ \begin{equation}
+  \mathbf{\left < z \right >_{z \sim \mathcal{R}(z)} = u(\mu) + } \sqrt{c(\varSigma)} \left [ v \left( \frac{u(\mu)}{\sqrt{c(\varSigma)}}, \frac{\epsilon}{\sqrt{c(\varSigma)}} \right )^y \cdot \tilde v \left ( \frac{u(\mu)}{\sqrt{c(\varSigma)}}, \frac{\epsilon}{\sqrt{c(\varSigma)}} \right )^{1-y} \right ] .
+ \end{equation}
+
+ \textbf{ Varianz Update Formeln	} \\
+ Für die GDF Update Formeln für $\varSigma$ müssen wir $\mathbf{\frac{ \partial \log{Z_r(\mu,\varSigma)}}{\partial \varSigma}}$ berehcnen. Dazu bemerken wir, dass 
+  
+ \begin{equation}
+  \frac{\partial \mathbf{C}}{\partial \varSigma_{i,j}} = \frac{\partial \mathbf{A^T \varSigma A}}{\partial \varSigma_{i,j}} = \mathbf{A^T \left ( \frac{\partial \varSigma}{\partial \varSigma_{i,j}} \right ) A = A^T e_i e_j^T A }
+ \end{equation}
+
+ Mittels Standardregeln aus der linearen Algebra lässt sich jetzt $\mathbf{G_{i,j}}$ herleiten:
+ 
+ \begin{equation}
+  \begin{split}
+   G_{i,j} &= \frac{1}{Z_r} \int_{I_y} \frac{\partial \mathcal{N}(\mathbf{z;u; C})}{\partial{\varSigma_{i,j}}} d \mathbf{z} \\
+   &= \frac{1}{Z_r} \int_{I_y}  \frac{ \partial (2 \pi)^{- \frac{n}{2}} \mathbf{|C|}^{\frac{1}{2}} exp \left (- \frac{1}{2} (\mathbf{z - \mu})^T \mathbf{C^{-1}} (\mathbf{z - \mu}) \right )}{\partial \varSigma_{i,j}} d \mathbf{z} \\
+   &= \frac{1}{Z_r} \int_{I_y} tr \left( \left ( \frac{ \partial (2 \pi)^{- \frac{n}{2}} \mathbf{|C|}^{\frac{1}{2}} exp \left (- \frac{1}{2} (\mathbf{z - \mu})^T \mathbf{C^{-1}} (\mathbf{z - \mu}) \right )}{\partial \mathbf{C}} \right )^T \cdot \frac{\partial \mathbf{C}}{\partial \varSigma_{i,j}} \right) d \mathbf{z} \\
+   &= \frac{1}{2} \mathbf{e_j^T A C^{-1}} \left ( \left [ \int_{I_y} \frac{\mathcal{N}(\mathbf{z;u,C})}{Z_r} \mathbf{(z - u)(z-u)^T d z}- \mathbf{C} \right ] \right ) \mathbf{C^{-1} A^T e_i} \\ 
+  \end{split}
+ \end{equation}
+
+ Dieser Ausdruck mithilfe der Verteilung $\mathcal{R}(\mathbf{z;u,C; I_y})$ kompakter geschrieben werden:
+ 
+ \begin{equation}
+  G_{i,j} = \frac{1}{2} \mathbf{e_j^T A C^{-1}} \left ( \left < \mathbf{z z ^T} \right >_{z \sim \mathcal{R}(z)} - \left < \mathbf{z} \right >_{z \sim \mathcal{R}(z)} \mathbf{u^T}  \mathbf{u} \left < \mathbf{z^T} \right >_{z \sim \mathcal{R}(z)} + \mathbf{u u^T - C} \right ) \mathbf{C^{-1} A^T e_i} \\
+ \end{equation}
+
+ Für die gesamte Update Formel der Varianz benötigen wir $g_i^2 - 2 G_{i,i}$: 
+ 
+ \begin{equation}
+  g_i^2 - 2 G_{i,i} = \mathbf{e_i^T A C^{-1} (C - (\left < z z^T \right >_{z \sim \mathcal{R}(z)} - \left < z \right >_{z \sim \mathcal{R}(z)} \left < z^T \right >_{z \sim \mathcal{R}(z)} )) C^{-1} A^T e_i}.
+ \end{equation}
+
+ Setzen wir diese Ergebnisse rückwärts in der GDF Update Formel ein und nutzen wir wiederum die Diagonalstruktur der Kovarianzmatrix aus, so ergibt sich für die aktualisierte Varianz:
+ 
+ \begin{equation}
+  \hat \sigma_i^2 = \sigma_i^2 (1- \sigma_i^2 \cdot \mathbf{e_i^T A C^{-1}(C- (\left < z z^T \right >_{z \sim \mathcal{R}(z)} - \left < z \right >_{z \sim \mathcal{R}(z)} \left < z^T \right >_{z \sim \mathcal{R}(z)}))} \mathbf{C^{-1} A^T e_i}).
+ \end{equation}
+ 
+ Auch hier ergeben sich die Zwei-Team-Spiele Update Formeln als Spezialfall aus den hier hergeleiteten Mehrteam-Spiel Formeln: 
+ 
+ \begin{equation}
+ \begin{split}
+  & \mathbf{\left < z z^T \right >_{z \sim \mathcal{R}(z)} - \left < z \right >_{z \sim \mathcal{R}(z)} \left < z^T \right >_{z \sim \mathcal{R}(z)} }   \\ 
+  = &\mathbf{C(\varSigma) \cdot } \left ( 1-  \left [ w \left( \frac{u(\mu)}{\sqrt{c(\varSigma)}}, \frac{\epsilon}{\sqrt{c(\varSigma)}} \right )^y \cdot \tilde w \left ( \frac{u(\mu)}{\sqrt{c(\varSigma)}}, \frac{\epsilon}{\sqrt{c(\varSigma)}} \right )^{1-y} \right ] \right ) .
+ \end{split}
+ \end{equation}
+
+
  \end{document}
