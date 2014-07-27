@@ -9,7 +9,7 @@
 % \usepackage[latin1]{inputenc} %  Alternativ unter Windows
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
-
+\usepackage{bbm}
 \usepackage{scrpage2}
 \usepackage[pdftex]{graphicx}
 \usepackage{latexsym}
@@ -95,11 +95,9 @@ Wir können sogar nicht einmal mithilfe der KL-Divergenz die beste Approximation
 da wir die Ableitungen der aus Summen und Produkten bestehenden Normalisierungskonstante $Z_x$ nicht effektiv
 berechnen können (\textit{Fluch der Dimension}). Wir wollen deshalb den Ansatz wählen die Faktoren 
 $t_{i,x}$ nacheinander in den Posterior einbauen. Dieses Verfahren ist als \textit{Expectation Propagation} bekannt. 
-Für Details möchten wir auf Kapitel () verweisen. 
+Für Details möchten wir auf Kapitel () verweisen. \\
 
-\subsubsection{Das Modell}
-
-Wir nehmen an, dass der i-te Faktor des Likelyhoods Funktion einer niedrig-dimensionalen Projektion von $\Theta$ ist. 
+\textbf{Das Modell	} Wir nehmen an, dass der i-te Faktor des Likelyhoods Funktion einer niedrig-dimensionalen Projektion von $\Theta$ ist. 
 Dann können wir die folgenden $m$ Funktionen $f_i$ statt den $m$ Faktoren $t_{i,x}$ verwenden:
 
 \begin{equation}
@@ -113,14 +111,345 @@ die gleiche funktionale Form,
  P'(\Theta,x) = \frac{ \prod_{i=0}^m f_i(\Theta)}{ \int \prod_{i=0}^m f_i(\Theta') d \Theta' } = \mathcal{N}(\Theta; \mu', \varSigma').
 \end{equation}
 
+Wir möchten an dieser Stelle bemerken, dass aufgrund der Projektion die Funktion 
+$Z_i := \int t_{ix}(\mathbf{\Theta}) \mathcal{N}(\mathbf{\Theta; \mu, \varSigma}) d \mathbf{\Theta}$, der Vektor
+$\mathbf{g_i} := \partial \log(Z_i(\mathbf{\mu', \varSigma'}))/\partial \mu'$ und die Matrix
+$\mathbf{G_i} := \partial \log(Z_i(\mathbf{\mu',\varSigma'}))/\partial \mathbf{\varSigma'}$ die folgende Form haben,
 
+\begin{equation}
+ \begin{split}
+ Z_i(\mathbf{\mu, \varSigma}) &= \int h(y) \mathcal{N}(y;\mathbf{A_i^T \mu, A_i^T \varSigma A_i})dy \\
+ \mathbf{g_i(\mu, \varSigma)} &= \mathbf{A_i[\alpha_i(A_i^T \mu, A_i^T \varSigma A_i)]}, \\
+ \mathbf{g_i(\mu, \varSigma) g_i^T(\mu, \varSigma)} - 2 \mathbf{G_i(\mu,\varSigma)} &= \mathbf{A_i[\Gamma_i(A_i^T \mu, A_i^T \varSigma A_i)] A_i^T}.\\
+ \end{split}
+ \end{equation}
+
+Dabei ist $\mathbf{\alpha_i}$ eine vektorwertige und $\Gamma_i$ eine matrixwertige Funktion für den i-ten Faktor.\\
+
+\textbf{Der Algorithmus} Wir nehmen zu Beginn an, dass $\mathbf{\mu_i = 0, \Pi_i = 0} $ und $s_i = 1$. 
+Damit folgt, dass $f_i$ die konstante 1-Funktion ist und damit $\mathbf{\hat \mu = \mu , \hat \varSigma = \varSigma} \text{ und } \hat Z_x = 1 $.
+Die Idee des \textit{EP-Algorithmus} ist es nacheinander eine Faktor $t_j$ zu wählen, um somit die Approximation
+$f_j$ mittels Korrekturen der Parameter $s_j, \mathbf{m_j} \text{ und } \mathbf{\Pi_j}$ zu verbessern. 
+Der resultierende Algorithmus \textit{EP-Algorithmus} ist dann: 
+
+\begin{enumerate}
+ \item Berechne die Parameter $ \mathbf{\mu_{\setminus j}}, \mathbf{\varSigma{\setminus j}} $ der Gaußapproximation des Posteriors ohne
+  den Faktor $t_j$ aber mit allen anderen Faktoren, 
+  \begin{equation}
+   P_{\setminus j}(\mathbf{\Theta|x}) = \mathcal{N}(\mathbf{\Theta; \mu_{ \setminus j} , \varSigma_{\setminus j}}) = \frac{\prod_{i \neq j}{f_i(\mathbf{\Theta})}}{ \int \prod_{i \neq j}{f_i(\mathbf{\tilde \Theta})} d \mathbf{\tilde \Theta} }
+  \end{equation}
+
+  \item Benutze die \textit{Gaussian Density Filtering} Approximation, wie in () vorgestellt um die neue 
+  Approximation des Posteriors zu erhalten, $\hat P(\mathbf{\Theta|x})$, mit
+  \begin{equation}
+   \hat P(\mathbf{\Theta|x}) = \mathcal{N}(\mathbf{\Theta, \hat \mu, \hat \varSigma}) = \frac{ t_{j,x}(\mathbf{\Theta}) \cdot \mathcal{N}(\mathbf{\Theta; \mu_{\setminus j}, \varSigma_{\setminus j}})}{\int t_{j,x}(\mathbf{ \tilde \Theta}) \cdot \mathcal{N}(\mathbf{\tilde \Theta; \mu_{ \setminus j}, \varSigma_{\setminus\ j}} d \tilde \Theta ) }.
+  \end{equation}
+  Dies kann nach Annahme effizient für jeden einzelnen Faktor berechnet werden. 
+  \item Akutalisiere die Parameter $s_j, \mathbf{\mu_j \text{ und } \Pi_j}$ des Faktors $f_j$, s.d.
+  
+  \begin{equation}
+   \mathcal{N}(\mathbf{\Theta, \hat \mu, \hat \varSigma}) = \frac{ f_j(\mathbf{\Theta}) \cdot \mathcal{N}(\mathbf{\Theta; \mu_{\setminus j}, \varSigma_{\setminus j}})}{\int f_j(\mathbf{ \tilde \Theta}) \cdot \mathcal{N}(\mathbf{\tilde \Theta; \mu_{ \setminus j}, \varSigma_{\setminus\ j}} d \tilde \Theta ) }
+  \end{equation}
+   und zur gleichen Zeit
+   \begin{equation}
+    \int f_j(\mathbf{ \tilde \Theta}) \cdot \mathcal{N}(\mathbf{\tilde \Theta; \mu_{ \setminus j}, \varSigma_{\setminus\ j}} d \tilde \Theta ) = \int t_{j,x}(\mathbf{ \tilde \Theta}) \cdot \mathcal{N}(\mathbf{\tilde \Theta; \mu_{ \setminus j}, \varSigma_{\setminus\ j}} d \tilde \Theta ) 
+   \end{equation}
+   gilt. () Ist nicht ausreichend, um alle Parameter zu aktualisieren, da $s_j$ im Zähler und Nenner der linken Seite
+   der Gleichung auftaucht. 
+\end{enumerate}
+
+\textbf{Wichtige Beziehungen } Um die Gleichungen der Aktualisierungen für die j-te Funktion zu erhalten benutzen wir
+(1.3) in (3.4)
+
+\begin{equation}
+ \mathbf{\hat \varSigma \hat \mu = A_j \Pi_j \mu_j + \varSigma^{-1}_{\setminus j} \mu_{\setminus j}}, \text{	} \mathbf{\hat \varSigma^{-1} = A_j \Pi_j A_j^T + \varSigma_{\setminus j}^{-1}}. 
+\end{equation}
+
+Mit der Eigenschaft aus (1.4) gilt außerdem 
+
+\begin{equation}
+ \int f_j(\mathbf{ \tilde \Theta}) \cdot \mathcal{N}(\mathbf{\tilde \Theta; \mu_{ \setminus j}, \varSigma_{\setminus\ j}}) d \tilde \Theta = s_j (2 \pi)^{\frac{n}{2}} |\mathbf{\Pi_j}|^{-\frac{1}{2}} \mathcal{N}(\mathbf{\mu_j; A_j^T \mu_{\setminus j}, \Pi_j^{-1} + A_j^T \varSigma_{\setminus j} A_j})
+\end{equation}
+
+Im Weiteren werden wir effiziente und numerisch stabile Gleichungen zur Aktualisierung der Parameter aufstellen. 
+Dabei benutzen wir die Kurznotationen
+
+\begin{equation}
+ \begin{split}
+ \mathbf{U_j} &:= \mathbf{\hat \varSigma A_j}, \text{	}, \mathbf{C_j := A_j^T U_j}, \text{	} \mathbf{m_j := A_j^T \hat \mu}, \text{	} \mathbf{D_j:= C_j \Pi_j ,} \\
+ \mathbf{ E_j}  &:= \mathbf{(I- D_j)^{-1}} , \text{		} \mathbf{F_j := (I-D_j^T)^{-1} = I + \Pi_j E_j C_j  } . \\
+ \end{split}
+ \end{equation}
+
+Der Ausdruck für $\mathbf{F_j}$ folgt hierbei mithilfe der \textit{Woodbury Formel}. Ein vollständiger Algorithmus ist in Algorithmus 1 angegeben. 
+Für den Rang 1, d.h. $\mathbf{A_i = a_i}$ lässt sich der Algorithmus ohne die Berechnung der Inversen schreiben. Diese Modifikation berücksichtigt
+Algorithmus 2. \\
+
+\textbf{Eliminationsgleichungen	} Um die $j-$te Funktion zu entfernen benutzen wir die \textit{Woodbury Formel} und nutzen die Symmetrie
+von $\hat \varSigma$. Damit erhalten wir 
+
+\begin{equation}
+ \begin{split}
+  \mathbf{\varSigma_{\setminus j}} &= \mathbf{( \hat \varSigma^{-1} - A_j \Pi_j A_j^T)} \\
+  &= \mathbf{\hat \varSigma + (\hat \varSigma A_j) \Pi_j (I - A_j^T \hat \varSigma A_j \Pi_j)^{-1} (A_j^T \hat \varSigma)}, \\
+  \mu_{\setminus j} &= \mathbf{\varSigma_{\setminus j} (\hat \varSigma^{-1} \hat \mu - A_j \Pi_j \mu_j)} \\
+  &= \mathbf{\hat \mu \varSigma_{\setminus j} A_j \Pi_j (A_j^T \hat \mu - \mu_j) }\\
+  &= \mathbf{\hat \mu + ( \hat \varSigma A_j \Pi_j )( I - A_j^T \hat \varSigma A_j \Pi_j )^ {-1} (A_j^T \hat \mu - \mu_j)} \\
+ \end{split}
+\end{equation}
+
+
+ALGORITHMUS 1 EINFüGEN!!! \\
+
+
+(3.11) folgt durch einsetzen von $\mathbf{A_j \Pi_j A_j^T + \varSigma_{\setminus j}^{-1}}$ für $\hat \varSigma^{-1}$ und (3.12) aus (3.10) mittels Multiplikation
+von $\mathbf{A_j}$ und Einsetzen in (3.11). Damit und mit (3.8) können die Gleichungen zum Entfernen der $j-$ten
+Funktion umgeschrieben werden,
+
+\begin{equation}
+ \mathbf{\mu_{\setminus j} = \hat \mu U_j \Pi_j E_j(m_j - \mu_j), \varSigma_{\setminus j} = \hat \varSigma U_j \Pi_j E_j U_j^T.} \\ 
+\end{equation}
+
+Mithilfe der Kurznotationen in () und () lassen sich die Ausdrücke als 
+
+\begin{equation}
+ \mathbf{\Phi_j := A_j^T \mu_{\setminus j} = m_j + D_j E_j(m_j - \mu_j), \text{		} \Psi_j = A_j^T \varSigma_{\setminus j}A_j = E_j C_j}
+\end{equation}
+
+schreiben. 
+
+\textbf{GDF Update Gleichungen	} In Anlehnung an Kapitel () sind die Update Gleichungen nach der Eleminierung des $j-$ten Faktors
+leicht einzusehen 
+
+\begin{equation}
+ \begin{split}
+  \mathbf{\hat \mu_{new}} &=  \mathbf{\hat \mu + U_j[\Pi_j E_j(m_j - \mu_j) + F_j \cdot \alpha_j(\Phi_j, \Psi_j)]} \\
+  \mathbf{\hat \varSigma_{new}} &= \mathbf{ \hat \varSigma + U_j[\Pi_j - F_j \cdot \Gamma_j(\Phi_j, \Psi_j)] E_j U_j^T}. \\ 
+ \end{split}
+\end{equation}
+
+\textbf{Faktor Update Gleichungen} Wir können die \textit{Woodbury Formel} auf (3.14) anwenden, um eine Inverse der neuen Kovarianzmatrix
+$ \hat \varSigma_{new}$ zu berechnen
+
+\begin{equation}
+  \hat \varSigma_{new}^{-1} = \mathbf{ \varSigma_{\setminus j}^{-1} + A_j(\Gamma_j^{-1}(\Phi_j, \Psi_j)- \Psi_j)^{-1} A_j^T}.
+\end{equation}
+
+Ebenso können wir $ \hat \varSigma_{new}^{-1} \hat \mu_{new}$ ausdrücken, 
+
+\begin{equation}
+ \mathbf{ \hat \varSigma_{new}^{-1} \hat \mu_{new} = \varSigma_{\setminus j}^{-1} \mu_{\setminus j} + A_j[[\Gamma_j^{-1}(\Phi_j, \Psi_j) - \Psi_j]^{-1} [\Gamma_j^{-1}(\Phi_j, \Psi_j) \cdot \alpha_j(\Phi_j, \Psi_j) + \Phi_j]]. \\ }
+\end{equation}
+
+Nun benutzen wir (3.6) und (3.7), um die Update Gleichungen für den $j-$ten Faktor aufschreiben zu können, 
+
+\begin{equation}
+ \begin{split}
+  \mathbf{\Pi_{j,new}} &= \mathbf{(\Gamma_j^{-1}(\Phi_j, \Psi_j) - \Psi_j)^{-1}}, \\
+  \mathbf{\mu_{j, new} } &= \mathbf{\Gamma_j^{-1}(\Phi_j, \Psi_j) \cdot \alpha_j(\Phi_j,\Psi_j) + \Phi_j} \\
+  s_{j, new} &= Z_j(\mathbf{\Phi_j, \Psi_j}) \cdot \mathbf{|I - \Gamma_j(\Phi_j, \Psi_j) \cdot \Psi_j|^{-\frac{1}{2}} exp( \frac{1}{2} \alpha_j^T(\Phi_j, \Psi_j) \cdot \Gamma_j^{-1}(\Phi_j, \Psi_j) \cdot \alpha_j(\Phi_j, \Psi_j))}. \\
+ \end{split}
+\end{equation}
+
+\textbf{Normalisierungskonstante	} Die Normalisierung $ \hat Z_x = \hat P(x)$ der Approximation von $\mathbf{P(x)}$ kann aus (3.1) einfach ermittelt
+ werden indem $\mathbf{\Theta = 0}$ gesetzt wird, 
+ 
+\begin{equation}
+ \hat Z_x = (\prod_{i = 1}^m s_i) \cdot \sqrt{ \frac{| \hat \varSigma |}{|\varSigma|}} \cdot exp(- \frac{1}{2}( \sum_{i = 1}^m \mathbf{\mu_i^T \Pi_i \mu_i + \mu^T \varSigma^{-1} \mu - \hat \mu^T \hat \varSigma^{-1} \hat \mu} )).
+\end{equation}
 
 \subsection{Multidimensional korrigiert und abgeschnittene Gaußverteilung}
-Wir nennen x korrigiert und abgeschnitten gaußverteilt, wenn $\mathbf{x} \sim \mathcal{R}(\mathbf{x};\mathbf{\mu},\mathbf{\varSigma}^2,\mathbf{\alpha},\mathbf{\beta})$ und dies bedeutet, dass die Dichte von $\mathbf{x}$ durch 
+Wir nennen $x$ doppelseitig korrigiert und abgeschnitten gaußverteilt, wenn $x \sim \mathcal{R}(x; \mu, \sigma^2, l,u)$ und dies bedeutet, dass die Dichte von $\mathbf{x}$ durch 
 
-gegeben ist.
-Es gibt keine effizienten analytischen Ausdrücke für die Normalisierungskonstante und jegliche Momente dieser Verteilung. Ist die Dimension von $x$ jedoch nicht zu groß, so lassen sich die 
-Normalisierungskonstante und Momente mithilfe des Genz Algorithmus approximieren. 
+\begin{equation}
+ \begin{split}
+ \mathcal{R}(x; \mu, \sigma^2, l,u) &= \mathbbm{1}_{x \in (l,u)} \cdot \frac{ \mathcal{N}(x; \mu, \sigma^2) }{ \Phi(u; \mu, \sigma^2) - \Phi(l; \mu, \sigma^2)} \\
+ &= \mathbbm{1}_{x \in (l,u)} \cdot \frac{ \mathcal{N}(\frac{x- \mu}{\sigma}) }{\sigma \cdot (\Phi(\frac{u-\mu}{\sigma} - \Phi(\frac{l-\mu}{\sigma})))} \\
+ \end{split}
+ \end{equation}
+
+gegeben ist. Wir schreiben $\mathcal{R}(x; \mu, \sigma^2, l)$ für $\lim_{u \rightarrow + \infty} \mathcal{R}(x; \mu, \sigma^2, l,u)$. Oft wird diese Verteilung einfach
+abgeschnittene Gaußverteilung genannt. Wir möchten bemerken, dass die Klasse der abgeschnittenen Gaußverteilungen die Familie der Gaußverteilung als
+Spezialfall enthält, 
+
+\begin{equation}
+ \lim_{l \rightarrow - \infty} \mathcal{R}(x; \mu, \sigma^2, l) = \mathcal{N}(x;\mu, \sigma^2).
+\end{equation}
+
+Es gelten die folgenden Eigenschaften für die Erwartung und die Varianz beidseitig abgeschnittener Gaußverteilungen. 
+
+\begin{Satz}
+ Die Erwartung und Varianz der abgeschnittenen Gaußverteilung haben die Form
+ 
+ \begin{equation}
+ \begin{split}
+  \left< x \right>_{x \sim \mathcal{R}} &= \mu + \sigma \cdot v\left(\frac{\mu}{\sigma}, \frac{l}{\sigma}, \frac{u}{\sigma}\right), \\
+  \left< x^2 \right>_{x \sim \mathcal{R}} - ( \left< x \right>_{x \sim \mathcal{R}})^2 &= \sigma^2 \cdot \left( 1 - w \left( \frac{\mu}{\sigma}, \frac{l}{\sigma}, \frac{\mu}{\sigma}\right) \right), \\
+ \end{split}
+ \end{equation}
+\end{Satz}
+
+ dabei sind die Funktionen $v$ und $w$ gegeben durch
+ 
+ \begin{equation}
+  \begin{split}
+    v(t,l,u) &:= \frac{ \mathcal{N}(l-t) - \mathcal{N}(u-t) }{ \Phi(u-t) - \Phi(l-t)}, \\
+    w(t,l,u) &:= v^2(t,l,u) + \frac{(u-t) \cdot \mathcal{N}(u-t) - (l-t) \cdot \mathcal{N}(l-t)}{\Phi(u-t) - \Phi(l-t)}. \\
+  \end{split}
+ \end{equation}
+
+ \begin{Beweis}
+  Um das erste und zweite Moment der abgeschnittenen Gaußverteilung berechnen zu können nutzen wir die Symmetrie
+   der Funktion $\Phi$ in ihren ersten beiden Argumenten aus, 
+   
+   \begin{equation}
+    \Phi \left(\frac{u - \mu}{\sigma} \right) \Phi(u; \mu,\sigma^2) = 1 - \Phi(\mu; u, \sigma^2).
+   \end{equation}
+
+   Die exakte Gleichung für das erste Moment erhalten wir dann, indem wir die erste Ableitung von 
+   $\Phi \left( \frac{u- \mu}{\sigma} \right) - \Phi \left( \frac{l- \mu}{\sigma} \right)$ nach $\mu$ bilden. 
+   Das zweite Moment folgt ebenso mittels der zweiten Ableitung des Ausdrucks nach $\mu$. 
+ \end{Beweis}
+
+\textbf{Erstes Moment	} Mittels der erwähnten Symmetrie erhalten wir 
+
+\begin{equation}
+ \frac{ \partial \left( \Phi \left( \frac{u - \mu}{\sigma}\right) - \Phi \left( \frac{l - \mu}{\sigma}\right) \right) }{ \partial \mu} = \int_l^u \frac{ \partial \mathcal{N}(x; \mu, \sigma^2)}{\partial \mu} dx = \sigma^{-2} \left< x -\mu \right>_{x \sim \mathcal{R}}
+\end{equation}
+
+und zur gleichen Zeit
+\begin{equation}
+ \begin{split}
+ \frac{ \partial \left( \Phi \left( \frac{u - \mu}{\sigma}\right) - \Phi \left( \frac{l - \mu}{\sigma}\right) \right) }{ \partial \mu} &= \frac{ \partial (\Phi(ßmu; l, \sigma^2) - \Phi(\mu;u,\sigma^2))}{ \partial \mu} \\ 
+ &= \mathcal{N}(\mu; l, \sigma^2) - \mathcal{N}(\mu; u, \sigma^2). \\
+ \end{split}
+ \end{equation}
+
+Da der erste und der zweite Ausdruck die Gleichheit erfüllen müssen, schließen wir, dass 
+
+\begin{equation}
+ \begin{split}
+   \left < x - \mu \right>_{x \sim \mathcal{R}} &= \sigma^2 \cdot \frac{ \mathcal{N}(\mu, l, \sigma^2) - \mathcal{N}(\mu; u, \sigma^2) }{ \Phi(u;\mu,\sigma^2) - \Phi(l;\mu,\sigma^2)} \\
+   \left< x \right>_{x \sim \mathcal{R}} &= \mu + \sigma^2 \cdot \frac{ \mathcal{N}(\mu, l, \sigma^2) - \mathcal{N}(\mu; u, \sigma^2) }{ \Phi(u;\mu,\sigma^2) - \Phi(l;\mu,\sigma^2)}. \\
+ \end{split}
+\end{equation}
+
+\textbf{Zweites Moment	} Um das zweite Moment zu berechnen nutzen wir wiederum die Symmetrie in Ausdruck (). Damit erhalten wir
+
+\begin{equation}
+\begin{split}
+ \frac{\partial^2 \left (  \Phi \left (\frac{u- \mu}{\sigma} \right )\right - \Phi \left ( \frac{l- \mu}{\sigma} \right ) )}{\partial \mu^2} &= \int_l^u \frac{\partial \left ( \frac{x - \mu}{\sigma^2} \right ) \cdot \mathcal{N}(x; \mu, \sigma^2)}{\partial \mu} dx \\
+ &= \sigma^{-4} \left < (x - \mu)^2 - \sigma^2 \right >_{x \sim \mathcal{R}} . \\
+\end{split}
+\end{equation}
+
+Gleichzeitig gilt
+
+\begin{equation}
+\begin{split}
+\frac{\partial^2 \left ( \Phi \left ( \frac{u- \mu}{\sigma} ) \right - \Phi \left ( \frac{u- \mu}{\sigma} ) \right \right )}{\partial \mu^2} &= \frac{\partial \left ( \mathcal{N}(\mu; l, \sigma^2) - \mathcal{N}(\mu;u, \sigma^2) \right ) }{\partial \mu} \\
+&= \sigma^{-2} \left [ (\mu - u) \mathcal{N}(\mu;u, \sigma^2) \right]. \\
+\end{split}
+\end{equation}
+
+Fügen wir die beiden Ausdrücke zusammen, so erhalten wir 
+
+\begin{equation}
+\begin{split}
+ \left < x^2 - 2x \mu + \mu^2 - \sigma^2 \right >_{x \sim \mathcal{R}} = \sigma^2 \cdot \frac{(\mu - u) \cdot \mathcal{N}(\mu;u,\sigma^2) - (\mu - l) \cdot \mathcal{N}(\mu;l,\sigma^2)}{\Phi(u; \mu, \sigma^2) - \Phi(l; \mu, \sigma^2)} \\
+ \left < x^2 \right >_{x \sim R} = \mu^2 + \sigma^2 \cdot \frac{(\mu + u) \cdot \mathcal{N}(\mu;u,\sigma^2) - (\mu + l) \cdot \mathcal{N}(\mu;l,\sigma^2)}{\Phi(u; \mu, \sigma^2) - \Phi(l; \mu, \sigma^2)} \\
+ \end{split}
+ \end{equation}
+ 
+\textbf{Varianz	} Die Varianz einer abgeschnittenen Gaußverteilung ergibt sich aus der Differenz des zweiten und dem Quadrat des ersten Momentes, 
+
+\begin{equation}
+ \sigma^2 \left ( 1 - v^2 \left( \frac{\mu}{\sigma}, \frac{l}{\sigma}, \frac{\mu}{\sigma} \right) + \frac{(\mu - u) \cdot \mathcal{N}(\mu; u, \sigma^2) - (\mu - l) \cdot \mathcal{N}(\mu;l,\sigma^2)}{\Phi(u;\mu, \sigma^2) - \Phi(l; \mu, \sigma^2)}\right ).
+\end{equation}
+
+Diese Funktion bezeichnen wir mit $w$.
+
+Im Grenzwert von $ u \rightarrow + \infty$ vereinfachen sich die Funktionen $v$ und $w$ zu
+
+\begin{equation}
+ \begin{split}
+  v(t,l) &:= \lim_{u \rightarrow + \infty} v(t,l,u) = \frac{\mathcal{N}(t-l)}{\Phi(t-l)}, \\
+  w(t,l) &:= \lim_{u \rightarrow + \infty} w(t,l,u) = v(t,l) \cdot (v(t,l) + t(t-l)).
+ \end{split}
+\end{equation}
+
+Wir möchten dabei bemerken, dass die Funktion $w$ jederzeit durch das Intervall $[0,1]$ beschränkt ist. 
+Die Funktion $v$ wächst wie $l-t$ für $t<l$ und fällt schnell zu Null für $t > l$. Außerdem ist die Funktion
+$w$ eine glatte Approximation der Indikatorfunktion $\mathbbm{I}_{t \leq l}$.
+
+\subsection{Mehrdimensional abgeschnittene Gaußverteilung}
+
+Wir nennen $\mathbf{x}$ mehrdimensional abgeschitten und Gaußverteilt, falls 
+$\mathbf{x \sim \mathcal{R}(x;\mu,\varSigma,l,u)} $, d.h., dass die Dichte von $\mathbf{x}$ die Form
+
+\begin{equation}
+ \mathcal{R}(\mathbf{x; \mu, \varSigma, l,u}) = \frac{ \mathbbm{I}_{\mathbf{l<x<u}} \cdot \mathcal{N}(\mathbf{x;\mu,\varSigma})}{ \mathbbm{I}_{\mathbf{l< \tilde x <u}} \cdot \mathcal{N}(\mathbf{\tilde x;\mu,\varSigma})}
+\end{equation}
+
+Bis jetzt wurden noch keine effizienten analytischen Ausdrücke für die Normalisierungskonstante und die Momente dieser
+Verteilung gefunden. Wir können aber den Gausschen EP Algorithmus benutzen, um die Erwartung, Kovarianz und die Normalisierungskonstante
+dieser Verteilung zu berechnen. Dazu schreiben wir den obigen Ausdruck zunächst um: 
+
+\begin{equation}
+ \mathcal{R}(\mathbf{x;\mu, \varSigma, l, u}) = \frac{ \prod_{i = 1}^n \mathbbm{I}_{l_i < x_i < u_i} \cdot \mathcal{N}(\mathbf{x;\mu,\varSigma})}{\int \prod_{i=1}^n \mathbbm{I}_{l_i< \tilde x_i < u_i } \cdot \mathcal{N}(\mathbf{\tilde x; \mu, \varSigma}) d \mathbf{\tilde x}}. 
+\end{equation}
+
+Nun müssen wir die exakten Gleichungen für $Z_i(\mathbf{\mu, \varSigma}), \alpha_i(\mathbf{\mu, \varSigma})$ und $\gamma_i(\mathbf{\mu,\varSigma})$ berechnen.
+Dabei gilt
+
+\begin{equation}
+ \begin{split}
+  \frac{\partial \log{Z_i}}{\partial \mathbf{\mu}} &= \alpha_i(\mathbf{\mu, \varSigma}) \cdot \mathbf{a_i} \\
+  \left [ \frac{\partial \log{Z_i} }{\parial \mathbf{\mu}} \right ] \left [ \frac{\partial \log{Z_i}}{\partial \mathbf{\mu}}\right ]^T - 2 \cdot \frac{\partial \log(Z_i)}{\partial \mathbf{\varSigma}} &= \gamma_i(\mathbf{\mu, \varSigma}) \cdot \mathbf{a_i a_i^T}.
+ \end{split}
+\end{equation}
+
+Wir nehmen im Folgenden an, dass die individuellen Faktoren die Form 
+
+\begin{equation}
+ t_i(\mathbf{x}) = \mathbbm{I}_{l_i < \mathbf{a_i^T x} < u_i}
+\end{equation}
+
+haben. Die exakte Form folgt durch setzen von $\mathbf{a_i = e_i}$. Um die Ausdrücke etwas zu kürzen 
+benutzen wir die Notationen 
+
+\begin{equation}
+ \phi_i := \mathbf{a_i^T \mu} \text{	und	} \psi_i := \mathbf{a_i^T \varSigma a_i}.
+\end{equation}
+
+Mit () folgt für $Z_i(\mathbf{\mu,\varSigma})$, 
+
+\begin{equation}
+ Z_i(\mathbf{\mu, \varSigma}) = \int t_i(\mathbf{x}) \mathcal{N}(\mathbf{x; \mu, \varSigma}) d \mathbf{x} = \int \mathbbm{I}_{l_i < y < u_i} \mathcal{N}(y; \phi_i, \psi_i) dy = \Phi(\frac{u_i - \phi_i}{\sqrt{\psi_i}}) - \Phi(\frac{l_i - \phi_i}{\sqrt{\psi_i}}).
+\end{equation}
+
+Wir beginnen mit der Ableitung von $\log Z_i(\mathbf{\mu, \varSigma})$ nach $\mathbf{\mu}$. Mit der Kettenregel erhalten wir
+
+\begin{equation}
+ \frac{\partial \log Z_i(\mathbf{\mu, \varSigma})}{\partial \mathbf{\mu}} = \frac{1}{Z_i(\mathbf{\mu, \varSigma})} \cdot \frac{\partial \Phi(\frac{u_i - \phi_i}{\sqrt{\psi_i}}) - \Phi(\frac{l_i - \phi_i}{\sqrt{\psi_i}})}{\partial \phi_i} \cdot \frac{\partial \phi_i}{\mathbf{\mu}} = \frac{1}{\sqrt{\psi_i}} \cdot \frac{\mathcal{N}(\frac{l_i - \phi_i}{\sqrt{\psi_i}}) - \mathcal{N}(\frac{u_i - \phi_i}{\sqrt{\psi_i}})}{\Phi(\frac{u_i - \phi_i}{\sqrt{\psi_i}}) - \Phi(\frac{l_i - \phi_i}{\sqrt{\psi_i}})} \cdot \mathbf{a_i}.
+\end{equation}
+
+Benutzen wir die in () definierte Funktion $v$, so können wir $\alpha_i(\phi, \psi_i)$ als
+
+\begin{equation}
+ \alpha_i(\phi_i, \psi_i) = \frac{1}{\sqrt{\psi_i}} \cdot v \left ( \frac{\phi_i}{\sqrt{\psi_i}}, \frac{l_i}{\sqrt{\psi_i}},\frac{u_i}{\sqrt{\psi_i}} \right )
+\end{equation}
+
+ausdrücken. 
+
+Um schlussendlich $gamma_i$ zu berechnen entwickeln wir die partielle Ableitung von $\log{Z_i(\mathbf{\mu, \varSigma})}$ nach $\mathbf{\varSigma}$ mit Hilfe der Kettenregel
+und erhalten
+
+\begin{equation}
+ \gamma_i(\phi_i, \psi_i) = \frac{1}{\psi_i} \cdot w \left ( \frac{\phi_i}{\sqrt{\psi_i}}, \frac{l_i}{\sqrt{\psi_i}},\frac{u_i}{\sqrt{\psi_i}} \right ).
+\end{equation}
+
+Den daraus resultierenden Algorithmus sehen wir in Algortihmus 3. 
 
 \subsection{Transformationstechniken und Genz Algorithmus}
 Im vorherigen Abschnitt haben wir gesehen, dass Integrale der Form
